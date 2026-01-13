@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../../partials/headtag', {isNiceSelect: false}); %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+  <style>
+    body{background-color: #f3f4f6 !important;}
+    .member_profile-container .profile-left-bar p.active {
+      background-color: #f3f4f6;
+      border-left: 4px solid #1a3c6c;
+    }
+
+    .member_profile-container .profile-left-bar p {
+      padding: 10px 15px;
+      margin: 0;
+      cursor: pointer;
+      border-left: 4px solid transparent;
+    }
+
+    .member_profile-container .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+      line-height: 20px;
+    }
+
+    .member_profile-container .form-group input,
+    .member_profile-container .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #868fa029;
+      border-radius: 6px;
+    }
+
+    .member_profile-container .form-group input[type="date"] {
+      padding: 8px;
+    }
+
+    .member_profile-container .single-trip-card h4 {
+      font-size: 20px;
+      line-height: 28px;
+      font-weight: 700;
+      letter-spacing: -0.25px;
+    }
+
+    .member_profile-container .trip_details p {
+      font-size: 14px;
+    }
+
+    .member_profile-container .form-group input,
+    .member_profile-container .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #868fa029;
+      border-radius: 6px;
+      background-color: #ffffff;
+    }
+
+    .member_profile-container .nice-select,
+    .member_profile-container .nice-select .list {
+      width: 100%;
+    }
+
+    .pagination {
+      display: inline-block;
+      margin-top: 20px;
+    }
+
+    .pagination a {
+      padding: 8px 16px;
+      margin: 4px;
+      text-decoration: none;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      color: black;
+    }
+
+    .pagination a:hover {
+      background-color: #ddd;
+    }
+
+    /* Updated button styles */
+    .btn-pay-now {
+      background-color: #1a4b8e;
+      color: white;
+      font-size: 14px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: background-color 0.3s;
+      width: 100%;
+      margin-bottom: 8px;
+    }
+
+    .btn-pay-now:hover {
+      background-color: #153a72;
+    }
+
+    .btn-download {
+      background-color: #28a745;
+      color: white;
+      font-size: 14px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      text-decoration: none;
+      width: 100%;
+      margin-bottom: 8px;
+    }
+
+    .btn-download:hover {
+      background-color: #218838;
+    }
+
+    .payment-time {
+      font-size: 12px;
+      color: #666;
+    }
+
+    /* Responsive payment actions */
+    .payment-actions {
+      position: relative;
+      padding: 10px 0;
+      width: 100%;
+    }
+
+    .payment-actions .btn-group {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    @media (min-width: 768px) {
+      .payment-actions .btn-group {
+        flex-direction: row;
+        gap: 10px;
+      }
+      .btn-pay-now,
+      .btn-download {
+        width: auto;
+        margin-bottom: 0;
+      }
+    }
+
+    /* Modal styling */
+    .modal-content {
+      border-radius: 10px;
+    }
+
+    .modal-header {
+      background-color: #1a4b8e;
+      color: white;
+    }
+
+    .modal-body {
+      padding: 20px;
+      text-align: center;
+      font-size: 18px;
+      color: #333;
+    }
+
+    @media (min-width: 992px) {
+      .single-trip-card .cm-border-right-lg {
+        border-right: 1px solid #dee2e6 !important;
+      }
+      .trip-card-expand {
+        position: relative;
+        padding-bottom: 60px;
+      }
+    }
+    @media screen and (max-width: 767px) {
+      .card-title{font-size: 1.5rem;}
+    }
+  </style>
+</head>
+
+<body>
+  <%- include('../../partials/header', {isSearch: false}); %>
+  <div class="container-xl pt-3">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <div class="row g-4 member_profile-container">
+      <!-- Left Sidebar -->
+      <div class="col-sm-4 col-md-3">
+        <div class="profile-left-bar p-2 bg-white rounded shadow-sm" onclick="handleProfileTabDivClick(event)">
+          <p class="active mb-2" data-tab-index="1">Profile</p>
+          <p class="mb-2" data-tab-index="2">Upcoming trips</p>
+          <p data-tab-index="3">Booking history</p>
+        </div>
+      </div>
+
+      <!-- Right Content Area -->
+      <div class="col-sm-8 col-md-9">
+        <div class="right_block">
+          <!-- Profile Section -->
+          <div class="profile_block card border-light shadow-sm" data-block-index="1">
+            <div class="card-body">
+              <h2 class="card-title mb-4">Personal details</h2>
+              <form class="row g-3" id="profileUpdateForm" action="/profile/update" method="POST">
+                <div class="col-md-6">
+                  <label for="FirstName">First Name*</label>
+                  <input type="text" id="FirstName" name="firstName" class="form-control" placeholder="First name" value="<%= profileFormData.firstName %>" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="LastName">Last Name*</label>
+                  <input type="text" id="LastName" name="lastName" class="form-control" placeholder="Last name" value="<%= profileFormData.lastName %>" required>
+                </div>
+
+                <div class="col-md-6">
+                  <label for="BirthDate">Birth date*</label>
+                  <input type="date" id="BirthDate" name="birthDate" class="form-control" value="<%= profileFormData.birthDate %>" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="gender">Gender*</label>
+                  <select id="gender" name="gender" class="form-select" required>
+                    <option value="male" <%=profileFormData.gender=='male' ? 'selected' : '' %>>Male</option>
+                    <option value="female" <%=profileFormData.gender=='female' ? 'selected' : '' %>>Female</option>
+                    <option value="other" <%=profileFormData.gender=='other' ? 'selected' : '' %>>Other</option>
+                  </select>
+                </div>
+
+                <div class="col-md-6">
+                  <label for="MobileNumber">Mobile number*</label>
+                  <input type="tel" id="MobileNumber" name="mobileNumber" class="form-control" placeholder="Enter 10-digit mobile number" value="<%= profileFormData.mobileNumber %>" required pattern="^\d{10}$" maxlength="10" inputmode="numeric" aria-required="true" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>
+                <div class="col-md-6">
+                  <label for="AlternateNumber">Alternative number</label>
+                  <input type="tel" id="AlternateNumber" name="alternateNumber" class="form-control" placeholder="Enter 10-digit alternative number" value="<%= profileFormData.alternateNumber %>" pattern="^\d{10}$" maxlength="10" inputmode="numeric" aria-required="false" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>
+
+                <div class="col-md-6">
+                  <label for="email">Email id</label>
+                  <input type="email" id="email" name="email" class="form-control" placeholder="example@gmail.com" value="<%= profileFormData.email %>" required>
+                </div>
+
+                <div>
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+              </form>
+
+              <p id="successAlert" class="alert alert-success d-none mt-3" role="alert">Profile updated successfully!</p>
+            </div>
+          </div>
+
+          <!-- Upcoming Trips Section -->
+          <div class="upcoming_trips d-none trip-section" data-block-index="2" onclick="handleTipCardExpand(event)">
+            <!-- Content loaded dynamically -->
+          </div>
+
+          <!-- Booking History Section -->
+          <div class="booking_history d-none trip-section" data-block-index="3" onclick="handleTipCardExpand(event)">
+            <!-- Content loaded dynamically -->
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination mt-3 d-flex justify-content-center" id="pagination-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Payment Success -->
+  <div class="modal fade" id="paymentSuccessModal" tabindex="-1" aria-labelledby="paymentSuccessModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="paymentSuccessModalLabel">Payment Successful</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Payment Complete</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="location.reload()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../../partials/footer'); %>
+  <%- include('../../partials/scripttag', {isNiceSelect: false}); %>
+  <script>
+    let crrLoadedTabIdx = "1";
+
+    function stopPropagationFn(event) {
+      event.stopPropagation();
+    }
+
+    async function handleProfileTabDivClick(event) {
+      const clickedElement = event.target;
+      const newTabIndex = clickedElement.getAttribute('data-tab-index');
+
+      if (clickedElement.tagName === 'P' && newTabIndex !== crrLoadedTabIdx) {
+        const prevTabElement = document.querySelector(`[data-tab-index="${crrLoadedTabIdx}"]`);
+        const prevDataElement = document.querySelector(`[data-block-index="${crrLoadedTabIdx}"]`);
+        const newDataElement = document.querySelector(`[data-block-index="${newTabIndex}"]`);
+
+        if (prevTabElement && prevDataElement) {
+          prevTabElement.classList.remove('active');
+          prevDataElement.classList.add('d-none');
+        }
+
+        if (clickedElement && newDataElement) {
+          clickedElement.classList.add('active');
+          newDataElement.classList.remove('d-none');
+        }
+
+        const paginationContainer = document.getElementById('pagination-container');
+        paginationContainer.innerHTML = "";
+
+        crrLoadedTabIdx = newTabIndex;
+
+        if (newTabIndex > 1) {
+          await loadTripData(newTabIndex);
+        }
+      }
+    }
+
+    async function loadTripData(newTabIndex, crrPage = 1) {
+      try {
+        const csrfToken = document.querySelector('input[name="_csrf"]').value;
+        const response = await fetch('/profile/getBookingHistoryItem', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken,
+          },
+          body: JSON.stringify({
+            crrPage: crrPage,
+            newTabIndex,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch trip data');
+        }
+
+        const result = await response.json();
+
+        let tripContainer = document.querySelector(`[data-block-index="${newTabIndex}"]`);
+        tripContainer.innerHTML = '';
+
+        if (result.items && result.items.length > 0) {
+          let myTrips = result.items;
+          myTrips.forEach((trip) => {
+            const paymentLogs = trip.paymentLogs || [];
+            const latestPayment = paymentLogs.length > 0 ? paymentLogs[paymentLogs.length - 1] : null;
+            const paymentTime = latestPayment ? new Date(latestPayment.paymentDate).toLocaleString('en-GB', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            }) : 'N/A';
+
+            let tripHTML = `
+<div class="single-trip-card d-flex flex-column flex-md-row gap-4 border order-1 rounded shadow-sm border-opacity-10 p-3 mb-3">
+    <div class="text-center text-md-start">
+        <img class="rounded-lg img-fluid" src="${trip.toursSystemId.imageurl}" class="img-thumbnail" style="max-width: 150px; height: auto;">
+    </div>
+    <div class="w-100 m-2">
+        <div>
+            <h4 class="trip_title">${trip.toursSystemId.name}</h4>
+            <p class="trip_date d-flex align-items-center">
+                <span class="me-2">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5.625 2.5V4.375M14.375 2.5V4.375M2.5 15.625V6.25C2.5 5.75272 2.69754 5.27581 3.04917 4.92417C3.40081 4.57254 3.87772 4.375 4.375 4.375H15.625C16.1223 4.375 16.5992 4.57254 16.9508 4.92417C17.3025 5.27581 17.5 5.75272 17.5 6.25V15.625M2.5 15.625C2.5 16.1223 2.69754 16.5992 3.04917 16.9508C3.40081 17.3025 3.87772 17.5 4.375 17.5H15.625C16.1223 17.5 16.5992 17.3025 16.9508 16.9508C17.3025 16.5992 17.5 16.1223 17.5 15.625M2.5 15.625V9.375C2.5 8.87772 2.69754 8.40081 3.04917 8.04917C3.40081 7.69754 3.87772 7.5 4.375 7.5H15.625C16.1223 7.5 16.5992 7.69754 16.9508 8.04917C17.3025 8.40081 17.5 8.87772 17.5 9.375V15.625" stroke="#4B5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </span>
+                <span class="mt-1">
+                    ${trip.tripStartDate} - ${trip.tripEndDate}
+                </span>
+            </p>
+        </div>
+        <div class="d-flex flex-wrap">
+            <div class="row w-100">
+                <div class="col-6 col-md-7 border-right">
+                    <div class="row mr-2">
+                        <div class="col-lg-6 orderId cm-border-right-lg mt-1">
+                            <p class="m-0 text-secondary">Trip code</p>
+                            <p class="m-0">${trip.tripCode || "DJV2025"}</p>
+                        </div>
+                        <div class="col-lg-6 travellers mt-1">
+                            <p class="m-0 text-secondary">Booking number</p>
+                            <p class="m-0">${trip.bookingNumber}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-5">
+                    <div class="row h-100">
+                        <div class="col-lg-6 booking_status cm-border-right-lg mt-1">
+                            <p class="m-0 text-secondary">Booking</p>
+                            <p>${trip.bookingStatus}</p>
+                        </div>
+                        <div class="col-lg-6 payment_status mt-1">
+                            <p class="m-0 text-secondary">Payment</p>
+                            <p class="badge ${trip.paymentStatus === 'Paid' ? 'text-success cm-bg-success-light' : 'text-danger cm-bg-danger-light'}">
+                                ${trip.paymentStatus}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="trip-card-expand d-none mt-3">
+            <div class="row mb-3">
+                <div class="pickup_details col-4">
+                    <p class="pickup-from text-secondary">Joining from:</p>
+                    <p class="pickup_city">${trip.joiningFrom}</p>
+                </div>
+                <div class="travel_date col-8">
+                    <p class="text-secondary">Travel date:</p>
+                    <p class="date_from">${trip.tripStartDate} - ${trip.tripEndDate}</p>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <div class="person_details col-4">
+                    <p class="mb-1 text-secondary">Total person</p>
+                    <p class="adults">Adults: ${trip.totalPerson?.adult}</p>
+                    <p class="childs">Children: ${trip.totalPerson?.child}</p>
+                </div>
+                <div class="col row col-8">
+                    <div class="total_costs text-secondary col-5">
+                        <p class="mb-1 text-secondary">Total costs</p>
+                        <p>₹${trip.totalTripCostWithGST?.toFixed(2)}</p>
+                    </div>
+                    ${trip.duePayment > 0 ? `
+                    <div class="due_payment col-7">
+                        <p class="mb-1 text-secondary">Due Payment</p>
+                        <p class="text-danger">₹${trip.duePayment.toFixed(2)}</p>
+                    </div>` : ''}
+                </div>
+            </div>
+            <div class="person_names">
+                <details>
+                    <summary onclick="stopPropagationFn(event)">View person’s details
+                        <span>
+                            <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M11.375 5.3125L7 9.6875L2.625 5.3125" stroke="#111827" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </span>
+                    </summary>
+                    <ul>
+                        ${trip.personDetails?.map((person, index) => `<li>${index + 1}. ${person.firstName} (${calculateAge(person.birthdate)})</li>`).join('')}
+                    </ul>
+                </details>
+            </div>
+            <!-- Payment Actions -->
+            <div class="payment-actions">
+              <div class="btn-group">
+                ${trip.duePayment > 0 ? `
+                <a href="/profile/download/receipt/${latestPayment?._id}" class="btn-download" onclick="stopPropagationFn(event)">
+                  <i class="bi bi-download"></i> Download Receipt
+                </a>
+                <button class="btn-pay-now" onclick="initiatePayment('${trip._id}', ${trip.duePayment})">
+                  <i class="bi bi-credit-card"></i> Pay ₹${trip.duePayment.toFixed(2)} now
+                </button>
+                ` : trip.paymentStatus === 'Paid' && trip.invoicePath ? `
+                <a href="/profile/download/invoice/${trip._id}" class="btn-download" onclick="stopPropagationFn(event)">
+                  <i class="bi bi-download"></i> Download Invoice
+                </a>
+                ` : ''}
+              </div>
+            </div>
+            ${latestPayment ? `
+            <p class="payment-time mt-2">Last Payment: ${paymentTime}</p>
+            ` : ''}
+        </div>
+    </div>
+</div>
+`;
+            tripContainer.insertAdjacentHTML('beforeend', tripHTML);
+          });
+        } else {
+          tripContainer.innerHTML = '<div class="p-3 bg-white shadow-sm rounded"><h4>No trips found !!!</h4></div>';
+          console.log('No trips found');
+        }
+        tripContainer.classList.remove('d-none');
+        renderPagination(result.paginationDet);
+      } catch (error) {
+        console.error('Error fetching trip data:', error);
+      }
+    }
+
+    function renderPagination(paginationDet) {
+      const paginationContainer = document.getElementById('pagination-container');
+      paginationContainer.innerHTML = '';
+      if (paginationDet.totalPages > 1) {
+        for (let i = 1; i <= paginationDet.totalPages; i++) {
+          const button = document.createElement('a');
+          button.textContent = i;
+          button.onclick = () => {
+            if (paginationDet.crrPage !== i) {
+              const crrTabIndex = document.querySelector('.profile-left-bar .active')?.getAttribute('data-tab-index');
+              loadTripData(crrTabIndex, i);
+              document.querySelector(`[data-block-index="${crrTabIndex}"]`).scrollIntoView({
+                behavior: 'smooth'
+              });
+            }
+          };
+          if (i === paginationDet.crrPage) {
+            button.style.backgroundColor = '#ddd';
+          }
+          paginationContainer.appendChild(button);
+        }
+      }
+    }
+
+    function handleTipCardExpand(event) {
+      const expandedElement = document.querySelector(".trip-section .trip-card-expanded");
+      expandedElement?.classList.toggle("d-none");
+      expandedElement?.classList.toggle("trip-card-expanded");
+
+      const clickedCardElement = event.target.closest('.single-trip-card');
+      const crrElement = clickedCardElement?.querySelector(".trip-card-expand");
+      if(!crrElement || !clickedCardElement) return;
+      if (expandedElement !== crrElement) {
+        crrElement?.classList.toggle("d-none");
+        crrElement?.classList.toggle("trip-card-expanded");
+      }
+    }
+
+    function calculateAge(birthdate) {
+      const birth = new Date(birthdate);
+      const today = new Date();
+      let age = today.getFullYear() - birth.getFullYear();
+      const monthDiff = today.getMonth() - birth.getMonth();
+      const dayDiff = today.getDate() - birth.getDate();
+      if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+        age--;
+      }
+      return age;
+    }
+
+    async function initiatePayment(bookingId, amount) {
+      try {
+        const csrfToken = document.querySelector('input[name="_csrf"]').value;
+        const response = await fetch('/profile/initiate-payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken,
+          },
+          body: JSON.stringify({ bookingId, amount}),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          const options = {
+            key: '<%= process.env.RAZORPAY_KEY_ID %>',
+            amount: result.order.amount,
+            currency: 'INR',
+            name: 'Deja-vu Outdoors',
+            description: `Payment for Booking ${bookingId}`,
+            order_id: result.order.id,
+            handler: async function (response) {
+              const verifyResponse = await fetch('/profile/verify-payment', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRF-Token': csrfToken,
+                },
+                body: JSON.stringify({
+                  razorpayOrderId: response.razorpay_order_id,
+                  razorpayPaymentId: response.razorpay_payment_id,
+                  razorpaySignature: response.razorpay_signature,
+                  paymentLogId: result.paymentLogId,
+                }),
+              });
+              const verifyResult = await verifyResponse.json();
+              if (verifyResult.success) {
+                const modal = new bootstrap.Modal(document.getElementById('paymentSuccessModal'));
+                modal.show();
+              } else {
+                showPaymentErrorNotification('Payment verification failed.');
+              }
+            },
+            prefill: {
+              email: '<%= profileFormData.email %>',
+              contact: '<%= profileFormData.mobileNumber %>',
+            },
+            theme: {
+              color: '#1a4b8e',
+            },
+          };
+          const rzp = new Razorpay(options);
+          rzp.open();
+        } else {
+          showPaymentErrorNotification('Failed to initiate payment: ' + result.message);
+        }
+      } catch (error) {
+        console.error('Error initiating payment:', error);
+        showPaymentErrorNotification('Error initiating payment.');
+      }
+    }
+
+    function showPaymentErrorNotification(message) {
+      const notification = document.createElement('div');
+      notification.className = 'notification error fixed-top mt-5 mx-auto text-center p-3 rounded shadow';
+      notification.style.backgroundColor = '#f8d7da';
+      notification.style.color = '#721c24';
+      notification.style.zIndex = '1000';
+      notification.style.maxWidth = '300px';
+      notification.innerHTML = `${message} <button class="btn-close ms-2" onclick="this.parentElement.remove()"></button>`;
+      document.body.appendChild(notification);
+      setTimeout(() => notification.remove(), 5000);
+    }
+
+    document.getElementById('profileUpdateForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const csrfToken = document.querySelector('input[name="_csrf"]').value;
+      const response = await fetch(e.target.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-Token': csrfToken
+        }
+      });
+      const result = await response.json();
+      if (response.ok) {
+        document.getElementById('successAlert').classList.remove('d-none');
+        setTimeout(() => {
+          document.getElementById('successAlert').classList.add('d-none');
+        }, 3000);
+      } else {
+        showPaymentErrorNotification(result.message || 'Failed to update profile');
+      }
+    });
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</body>
+
+</html>

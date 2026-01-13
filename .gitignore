@@ -1,36 +1,81 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
+####################################
+# SYSTEM / OS
+####################################
 .DS_Store
-*.pem
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.log
 
-# debug
+####################################
+# NODE / NPM
+####################################
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+package-lock.json.bak
 
-# local env files
-.env*.local
+####################################
+# ENV / SECRETS (CRITICAL)
+####################################
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
 
-# vercel
-.vercel
+####################################
+# EXPRESS / NODE BUILD & RUNTIME
+####################################
+dist/
+build/
+tmp/
+temp/
+.cache/
 
-# typescript
+
+####################################
+# LOGS
+####################################
+logs/
+*.log
+
+####################################
+# NEXT.JS (React.admin)
+####################################
+React.admin/.next/
+React.admin/out/
+React.admin/.vercel/
+React.admin/node_modules/
+React.admin/.env*
+!React.admin/.env.example
+
+####################################
+# NEXT CACHE / BUILD ARTIFACTS
+####################################
+React.admin/.swc/
+React.admin/.cache/
+React.admin/.turbo/
+
+####################################
+# TYPESCRIPT
+####################################
 *.tsbuildinfo
-next-env.d.ts
+
+####################################
+# TESTING
+####################################
+coverage/
+
+####################################
+# MISC
+####################################
+*.bak
+*.tmp
+*.old

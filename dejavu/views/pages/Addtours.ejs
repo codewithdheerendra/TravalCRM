@@ -1,0 +1,2605 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <%- include('../partials/headtag', {isNiceSelect: true}); %>
+  <!-- Font Awesome for Premium Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- FilePond CSS -->
+  <link href="https://unpkg.com/filepond@4.30.6/dist/filepond.css" rel="stylesheet" />
+  <!-- FilePond Image Preview -->
+  <link href="https://unpkg.com/filepond-plugin-image-preview@4.6.12/dist/filepond-plugin-image-preview.css" rel="stylesheet" />
+  <!-- Flatpickr CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+  <!-- Quill CSS -->
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <title>Dejavu Add Tours Details</title>
+  <style>
+    :root {
+      --primary: #1a3c6e;
+      --primary-hover: #0f2952;
+      --secondary: #f4a261;
+      --secondary-hover: #e76f51;
+      --accent: #2a9d8f;
+      --bg-light: #f8f9fa;
+      --bg-dark: #ffffff;
+      --text-dark: #212529;
+      --text-muted: #6c757d;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      --border-radius: 8px;
+      --transition: all 0.3s ease;
+    }
+
+    body {
+      background: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 100%);
+      color: var(--text-dark);
+      min-height: 100vh;
+    }
+
+    .form-container {
+      background: var(--bg-dark);
+      padding: 2.5rem;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      margin-block: 2rem;
+      transition: var(--transition);
+    }
+
+    .form-container h1 {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      color: var(--primary);
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 2rem;
+    }
+
+    .form-label {color: var(--text-dark);transition: var(--transition);}
+    .form-control, .form-select {transition: var(--transition);}
+    .btn{display: flex; align-items: center; gap: 0.5rem;}
+    .input-group .btn {
+      border-radius: 6px;
+      transition: var(--transition);
+    }
+
+    .btn-primary {
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-weight: 500;
+      border-radius: 6px;
+      transition: var(--transition);
+    }
+
+    .btn-primary:hover {
+      background-size: 200%;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: var(--secondary);
+      border: none;
+      color: #fff;
+      padding: 0.75rem 1.5rem;
+      font-weight: 500;
+      border-radius: 6px;
+      transition: var(--transition);
+    }
+
+    .btn-secondary:hover {
+      background: var(--secondary-hover);
+      transform: translateY(-2px);
+    }
+
+    .btn-danger {transition: var(--transition);}
+    .btn-danger:hover {transform: translateY(-2px);}
+
+    .accordion{--bs-accordion-active-color: #fff;--bs-accordion-active-bg: var(--primary); --bs-accordion-border-color: transparent;}
+    .accordion-item {margin-bottom: 1rem;box-shadow: var(--shadow);}
+
+    .accordion-button {
+      background: var(--bg-light);
+      color: var(--text-dark);
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    .modal-content {
+      border: none;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      animation: modalFadeIn 0.3s ease-out;
+    }
+
+    .modal-header {
+      background: var(--primary);
+      color: #fff;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      padding: 1rem 1.5rem;
+    }
+
+    .modal-title {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+    }
+
+    .modal-body {
+      padding: 2rem;
+      background: #fff;
+    }
+
+    .modal-footer {
+      border-top: none;
+      padding: 1rem 1.5rem;
+      background: #f8f9fa;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .preview-container {
+      margin-top: 1rem;
+      position: relative;
+      max-width: 200px;
+      max-height: 200px;
+      min-height: 100px;
+      overflow: hidden;
+    }
+
+    .preview-container img {
+      width: 100%;
+      height: auto;
+      max-height: 200px;
+      /* Limits image height */
+      object-fit: cover;
+      /* Ensures image fills space without distortion */
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .preview-container img:hover {
+      transform: scale(1.02);
+      /* Reduced scale for subtle effect */
+      box-shadow: var(--shadow);
+      z-index: 1;
+      /* Ensures it stays above other elements */
+    }
+
+    .pdf-preview-container {
+      margin-top: 1rem;
+      position: relative;
+      max-width: 200px;
+    }
+
+    .preview-container img,
+    .pdf-preview-container embed {
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .preview-container img:hover,
+    .pdf-preview-container embed:hover {
+      transform: scale(1.05);
+      box-shadow: var(--shadow);
+    }
+
+    .multiple-preview img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      margin-right: 0.5rem;
+      border-radius: 6px;
+      transition: var(--transition);
+    }
+
+    .multiple-preview img:hover {
+      transform: scale(1.05);
+    }
+
+    .remove-image,
+    .remove-pdf {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      color: #fff;
+      transition: var(--transition);
+      aspect-ratio: 1 / 1;
+      align-items: center;
+    }
+
+    .trip-categories-group .select2-container--default .select2-selection--multiple,
+    .region-group .select2-container--default .select2-selection--single {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    .btn-app-primary{transition: var(--transition);}
+
+    .city-entry {
+      background: #f8f9fa;
+      padding: 1.5rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .pricingRow {position: relative; margin-block-start: 0; margin-block-end: 1rem;}
+    .pricingRow +  .pricingRow {border-top: 1px solid var(--bs-border-color);}
+
+    /* .removeRow { position: absolute; right: 0.75rem; bottom: 0.25rem; aspect-ratio: 1;} */
+    .datePicking { border-radius: 6px; }
+
+    .table-responsive table {
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .table-light {
+      background: var(--bg-light);
+    }
+
+    .editor-container {
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .ql-toolbar {
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+    }
+
+    .ql-container {
+      border-bottom-left-radius: 6px;
+      border-bottom-right-radius: 6px;
+    }
+    .invalid-feedback{margin-block-end: 0;}
+
+    @media (max-width: 768px) {
+      .form-container {padding: 1.5rem 0.75rem;margin-block: 1rem;}
+      .city-entry {padding: 1.5rem 0.75rem;}
+    }
+  </style>
+</head>
+
+<body>
+  <%- include('../partials/header', {isSearch: false}, {title: "Deja-vu Tours Treks and Travel"}); %>
+  <div class="container-xl">
+    <div class="form-container">
+      <h1><i class="fas fa-map-marked-alt me-2"></i> <%= trips._id ? 'Edit Trip' : 'Add Trip' %></h1>
+      <form action="/admin/postNewAddTours" method="POST" id="addUpdateTripDetial" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <!-- Trip Name -->
+        <div class="row gy-3 mb-4">
+          <div class="col-12">
+            <label for="name" class="form-label">Trip Name <small class="text-success fw-bold">* Must be unique</small></label>
+            <input type="text" class="form-control" name="name" id="name" value="<%= trips.name || '' %>" placeholder="Enter Trip Name" required />
+            <input type="hidden" name="tripId" id="tripId" value="<%= trips._id || '' %>" />
+            <small id="nameError" class="text-danger d-none">Trip name already exists!</small>
+          </div>
+          <!-- Is Active -->
+          <div class="col-12">
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" name="isActive" id="isActive" <%= trips.isActive ? 'checked' : '' %> />
+              <label for="isActive" class="form-check-label">Publish Trip</label>
+            </div>
+            <p class="form-text text-muted">Check to make the trip visible. Unchecked trips are saved as drafts.</p>
+          </div>
+          <!-- Region and Destinations -->
+          <div class="col-12 col-md-4">
+            <label for="state" class="form-label">Region</label>
+            <div class="input-group region-group">
+              <select class="form-control select2" name="state" id="state" data-placeholder="Select a Region" style="width: 100%" required>
+                <option value="" disabled selected hidden>Select a Region</option>
+              </select>
+              <button type="button" class="btn btn-app-primary" id="refreshRegions" title="Refresh Regions">
+                <i class="fas fa-sync-alt"></i>
+              </button>
+            </div>
+          </div>
+          <div class="col-12 col-sm-6 col-md-4">
+            <label for="destinations" class="form-label">Destinations</label>
+            <input type="text" class="form-control" name="destinations" id="destinations" value="<%= trips.destinations || '' %>" placeholder="Enter Destinations" />
+          </div>
+          <div class="col-12 col-sm-6 col-md-4">
+            <label for="route" class="form-label">Route</label>
+            <input type="text" class="form-control" name="route" id="route" value="<%= trips.route || '' %>" placeholder="Enter Route" />
+          </div>
+          <!-- Image Upload -->
+          <div class="col-12 col-sm-6 col-md-4">
+            <label for="file" class="form-label">Upload Image</label>
+            <input type="file" accept="image/*" name="image" id="file" class="form-control">
+            <input type="hidden" name="existingImage" value="<%= trips.imageurl || '' %>">
+            <div class="preview-container d-flex align-items-center border rounded p-2" id="mainImagePreviewContainer" style="display: <%= trips.imageurl ? 'flex' : 'none' %>;">
+              <img id="mainImagePreview" src="<%= trips.imageurl || '' %>" alt="Preview" data-bs-toggle="modal" data-bs-target="#imageModal">
+              <button type="button" class="btn btn-sm btn-danger rounded-pill remove-image" id="removeMainImage" style="display: <%= trips.imageurl ? 'flex' : 'none' %>;">
+                <i class="fas fa-times"></i><span class="visually-hidden">Remove</span>
+              </button>
+            </div>
+          </div>
+          <div class="col-12 col-sm-6 col-md-4">
+            <label for="bannerImages" class="form-label">Upload Banner Images (Multiple) <span class="text-muted">Disabled</span></label>
+            <input type="file" accept="image/*" id="bannerImages" class="form-control" multiple disabled>
+            <p class="multiple-preview d-flex mt-2" id="bannerPreviewContainer"></p>
+          </div>
+          <div class="col-12 col-sm-6 col-md-4">
+            <label for="document" class="form-label">Upload PDF Document</label>
+            <input type="file" accept="application/pdf" name="image" id="document" class="form-control" aria-describedby="pdfHelpText">
+            <input type="hidden" name="existingDocument" value="<%= trips.documentUrl || '' %>">
+            <p class="form-text small" id="pdfHelpText">PDF file size should be Max 5MB</p>
+            <small class="text-danger d-none" id="documentError">Invalid file type or size exceeded (Max 5MB).</small>
+            <div class="pdf-preview-container" id="pdfPreviewContainer" style="display: <%= trips.documentUrl ? 'block' : 'none' %>;">
+              <embed id="pdfPreview" src="<%= trips.documentUrl || '' %>" type="application/pdf" data-bs-toggle="modal" data-bs-target="#pdfModal">
+              <button type="button" class="btn btn-sm btn-danger rounded-pill remove-pdf" id="removePdf" style="display: <%= trips.documentUrl ? 'block' : 'none' %>;">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+          <!-- Route and Days -->
+          <div class="col-6 col-md-3">
+            <label for="altitude" class="form-label">Altitude (feet)</label>
+            <input type="text" class="form-control" name="altitude" id="altitude" value="<%= trips.altitude || '' %>" placeholder="Enter Altitude" />
+          </div>
+          <div class="col-6 col-md-3">
+            <label for="days" class="form-label">Trip Duration</label>
+            <input type="text" class="form-control" name="days" id="days" value="<%= trips.days || '' %>" placeholder="Enter Duration" />
+          </div>
+          <div class="col-6 col-md-3">
+            <label for="tripType" class="form-label">Difficulty</label>
+            <input type="text" class="form-control" name="tripType" id="tripType" value="<%= trips.tripType || '' %>" placeholder="Enter Difficulty" />
+          </div>
+          <div class="col-6 col-md-3">
+            <label for="price" class="form-label">Base Price (₹)</label>
+            <input type="text" class="form-control" name="price" id="price" value="<%= trips.price || '' %>" placeholder="Enter Price" />
+          </div>
+          <!-- Best Season -->
+          <div class="col-12 col-md-6">
+            <label for="bestSession" class="form-label">Best Season</label>
+            <select class="form-control select2" name="bestSession[]" id="bestSession" multiple data-placeholder="Select Best Seasons" style="width: 100%">
+              <option value="Summer" <%= trips.bestSession && trips.bestSession.includes('Summer') ? 'selected' : '' %>>Summer</option>
+              <option value="Winter" <%= trips.bestSession && trips.bestSession.includes('Winter') ? 'selected' : '' %>>Winter</option>
+              <option value="Monsoon" <%= trips.bestSession && trips.bestSession.includes('Monsoon') ? 'selected' : '' %>>Monsoon</option>
+              <option value="Spring" <%= trips.bestSession && trips.bestSession.includes('Spring') ? 'selected' : '' %>>Spring</option>
+              <option value="Autumn" <%= trips.bestSession && trips.bestSession.includes('Autumn') ? 'selected' : '' %>>Autumn</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-6">
+            <label for="bestMonthToVisit" class="form-label">Best Month to Visit</label>
+            <select class="form-control select2" name="bestMonthToVisit[]" id="bestMonthToVisit" multiple data-placeholder="Select Best Months" style="width: 100%">
+              <option value="January" <%= trips.bestMonthToVisit && trips.bestMonthToVisit.includes('January') ? 'selected' : '' %>>January</option>
+              <option value="February" <%= trips.bestMonthToVisit && trips.bestMonthToVisit.includes('February') ? 'selected' : '' %>>February</option>
+              <option value="March" <%= trips.bestMonthToVisit && trips.bestMonthToVisit.includes('March') ? 'selected' : '' %>>March</option>
+              <option value="April" <%= trips.bestMonthToVisit && trips.bestMonthToVisit.includes('April') ? 'selected' : '' %>>April</option>
+              <option value="May" <%= trips.bestMonthToVisit && trips.bestMonthToVisit.includes('May') ? 'selected' : '' %>>May</option>
+              <option value="June" <%= trips.bestMonthToVisit && trips.bestMonthToVisit.includes('June') ? 'selected' : '' %>>June</option>
+              <option value="July" <%= trips.bestMonthToVisit && trips.bestMonthToVisit.includes('July') ? 'selected' : '' %>>July</option>
+              <option value="August" <%= trips.bestMonthToVisit && trips.bestMonthToVisit.includes('August') ? 'selected' : '' %>>August</option>
+              <option value="September" <%= trips.bestMonthToVisit && trips.bestMonthToVisit.includes('September') ? 'selected' : '' %>>September</option>
+              <option value="October" <%= trips.bestMonthToVisit && trips.bestMonthToVisit.includes('October') ? 'selected' : '' %>>October</option>
+              <option value="November" <%= trips.bestMonthToVisit && trips.bestMonthToVisit.includes('November') ? 'selected' : '' %>>November</option>
+              <option value="December" <%= trips.bestMonthToVisit && trips.bestMonthToVisit.includes('December') ? 'selected' : '' %>>December</option>
+            </select>
+          </div>
+          <!-- Trip Categories -->
+          <div class="col-12 col-md-6">
+            <label for="tripCategories" class="form-label">Trip Categories</label>
+            <div class="input-group trip-categories-group">
+              <select class="form-select select2" name="tripCategories[]" id="tripCategories" multiple data-placeholder="Select Trip Categories" aria-describedby="refreshCategories">
+              </select>
+              <button type="button" class="btn btn-app-primary" id="refreshCategories" title="Refresh Categories">
+                <i class="fas fa-sync-alt"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Departure City -->
+        <div class="border rounded py-3 px-2 px-sm-3 bg-light mb-4">
+          <h5 class="mb-3">Departure City <small class="text-success fw-bold">* Must be unique</small></h5>
+          <div id="cityContainer">
+            <div class="city-entry">
+              <button type="button" class="btn btn-danger btn-sm ms-auto align-items-center gap-2 mb-3 remove-city"><i class="fas fa-trash"></i> Remove City</button>
+              <div class="row gy-3">
+                <div class="col-12 col-sm-6 col-md-4">
+                  <h6>Add City</h6>
+                  <select class="form-select city-select" name="city[]">
+                    <option value="">Select City</option>
+                  </select>
+                  <p class="invalid-feedback">City is required</p>
+                </div>
+                <div class="col-12 col-sm-6 col-md-2">
+                  <label>State</label>
+                  <input type="text" class="form-control state-field" name="stateField[]" placeholder="State" readonly>
+                </div>
+                <div class="col-12 col-md-2">
+                  <label>City Image</label>
+                  <img src="" class="img-fluid city-image" style="display: none; max-width: 100px; border-radius: 6px;">
+                </div>
+                <div class="col-12 col-md-4">
+                  <label class="form-label">Trip Duration from City</label>
+                  <small class="form-text text-muted d-block mb-1">e.g. 7D-8N, 7 Days - 8 Nights</small>
+                  <input type="text" class="form-control tripDuration" name="tripDuration[]" placeholder="2 Day - 1 Night">
+                  <p class="invalid-feedback">Trip Duration is required</p>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                  <label class="form-label">Available Slots</label>
+                  <input type="number" class="form-control availableSlots" name="availableSlots[]" placeholder="Enter slots (e.g., 20)" min="0">
+                  <p class="invalid-feedback">Must be non-negative</p>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                  <label class="form-label">Partial Payment (₹)</label>
+                  <input type="number" class="form-control partialPayment" name="partialPayment[]" placeholder="Enter payment (e.g., 5000)" min="0">
+                  <p class="invalid-feedback">Must be non-negative</p>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                  <label class="form-label">Booking Cutoff Days</label>
+                  <input type="number" class="form-control bookingCutoffDays" name="bookingCutoffDays[]" placeholder="Enter days (e.g., 2)" min="0">
+                  <p class="invalid-feedback">Must be non-negative</p>
+                </div>
+              </div>
+              <h5 class="d-flex flex-wrap gap-2 justify-content-between align-items-center pt-4">
+                Pricing Details
+                <button type="button" class="btn btn-primary btn-sm" id="addRow"><i class="fas fa-plus"></i> Add Pricing</button>
+              </h5>
+              <div id="pricingContainer">
+                <div class="row gy-3 pricingRow">
+                  <div class="col-12 col-sm-6 col-md-4">
+                    <label class="form-label">Transport Type</label>
+                    <input type="text" class="form-control transferType" name="transferType[]" placeholder="Transport Type">
+                    <p class="invalid-feedback">Transport Type is required</p>
+                  </div>
+                  <div class="col-12 col-sm-6 col-md-4">
+                    <label class="form-label">Child Price</label>
+                    <input type="number" class="form-control childPrice" name="childPrice[]" placeholder="Price per child">
+                    <p class="invalid-feedback">Child Price is required</p>
+                  </div>
+                  <div class="col-12 col-sm-6 col-md-4 position-relative">
+                    <label class="form-label">Adult Price</label>
+                    <input type="number" class="form-control adultPrice" name="adultPrice[]" placeholder="Price per adult">
+                    <p class="invalid-feedback">Adult Price is required</p>
+                    <button type="button" class="btn btn-danger btn-sm removeRow mt-3 ms-auto rounded-pill"><i class="fas fa-times"></i> Remove Price</button>
+                  </div>
+                </div>
+              </div>
+              <div class="row gy-3">
+                <div class="col-lg-4">
+                  <h5>Available Dates</h5>
+                  <div class="input-group">
+                    <input type="text" class="form-control datePicking" name="datePicker[]" placeholder="Select dates">
+                    <button class="btn btn-danger clearDates"><i class="fas fa-trash"></i> Clear</button>
+                  </div>
+                  <small class="text-danger d-none error-msg">Please select at least one date</small>
+                </div>
+                <div class="col-lg-8">
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                      <thead class="table-light">
+                        <tr>
+                          <th class="text-center" style="width: 10%;">S.No.</th>
+                          <th class="text-center" style="width: 60%;">Selected Date</th>
+                          <th class="text-center" style="width: 30%;">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody class="datePreview"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary mt-2 btn-sm addCity" id="addCity"><i class="fas fa-plus"></i> Add City</button>
+        </div>
+        <!-- Accordions -->
+        <div class="accordion" id="aboutAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="aboutHeading" data-bs-theme="dark">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#aboutCollapse" aria-expanded="false" aria-controls="aboutCollapse">
+                <i class="fas fa-info-circle me-2"></i> About Information
+              </button>
+            </h2>
+            <div id="aboutCollapse" class="accordion-collapse collapse" aria-labelledby="aboutHeading" data-bs-parent="#aboutAccordion">
+              <div class="accordion-body">
+                <div class="editor-container" id="about-editor"><%- trips.about || '' %></div>
+                <small class="text-danger d-none" id="aboutError">About field is required (Max: 500 characters)</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="accordion" id="activitiesAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="activitiesHeading" data-bs-theme="dark">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#activitiesCollapse" aria-expanded="false" aria-controls="activitiesCollapse">
+                <i class="fas fa-info-circle me-2"></i> Activities & Attraction
+              </button>
+            </h2>
+            <div id="activitiesCollapse" class="accordion-collapse collapse" aria-labelledby="activitiesHeading" data-bs-parent="#activitiesAccordion">
+              <div class="accordion-body">
+                <div class="editor-container" id="activities-editor"><%- trips.activities || '' %></div>
+                <small class="text-danger d-none" id="activitiesError">Activities field is required (Max: 500 characters).</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Itinerary -->
+        <div class="mb-3 px-2 py-3 px-md-3 border rounded bg-light">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5><i class="fas fa-route me-2"></i> Itinerary</h5>
+            <button id="add-day" class="btn btn-primary" disabled><i class="fas fa-plus"></i> Add Day</button>
+          </div>
+          <div id="itinerary-container" class="accordion">
+            <% if (trips && trips.itinerary && trips.itinerary.length > 0) { %>
+            <% trips.itinerary.forEach(function(dayItem, index) { %>
+            <div class="accordion-item itinerary-day" data-day="<%= index + 1 %>">
+              <h2 class="accordion-header" id="heading-<%= index + 1 %>" data-bs-theme="dark">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<%= index + 1 %>" aria-expanded="true" aria-controls="collapse-<%= index + 1 %>">
+                  <%= dayItem.day || 'Day ' + (index + 1) %>
+                </button>
+              </h2>
+              <div id="collapse-<%= index + 1 %>" class="accordion-collapse collapse show" aria-labelledby="heading-<%= index + 1 %>" data-bs-parent="#itinerary-container">
+                <div class="accordion-body">
+                  <div class="mb-3">
+                    <label class="form-label">Header</label>
+                    <input type="text" class="form-control itinerary-header" name="itinerary-header[]" value="<%= dayItem.header || '' %>" placeholder="Enter Header" />
+                    <div class="invalid-feedback">Header is required</div>
+                  </div>
+                  <div class="editor-container" id="editor-<%= index + 1 %>"></div>
+                  <input type="hidden" name="content[]" class="quill-content" value="<%= dayItem.description ? dayItem.description.replace(/"/g, '"').replace(/>/g, '>').replace(/</g, '<') : '' %>">
+                  <button type="button" class="btn btn-danger btn-sm remove-day-btn mt-2" <%= trips.itinerary.length === 1 ? 'disabled' : '' %>><i class="fas fa-trash"></i> Remove Day</button>
+                </div>
+              </div>
+            </div>
+            <% }); %>
+            <% } else { %>
+            <div class="accordion-item itinerary-day" data-day="1">
+              <h2 class="accordion-header" id="heading-1" data-bs-theme="dark">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-1" aria-expanded="true" aria-controls="collapse-1">
+                  Day 1
+                </button>
+              </h2>
+              <div id="collapse-1" class="accordion-collapse collapse show" aria-labelledby="heading-1" data-bs-parent="#itinerary-container">
+                <div class="accordion-body">
+                  <div class="mb-3">
+                    <label class="form-label">Header</label>
+                    <input type="text" class="form-control itinerary-header" name="itinerary-header[]" placeholder="Enter Header" />
+                    <div class="invalid-feedback">Header is required</div>
+                  </div>
+                  <div class="editor-container" id="editor-1"></div>
+                  <input type="hidden" name="content[]" class="quill-content" value="">
+                  <button type="button" class="btn btn-danger btn-sm remove-day-btn mt-2" disabled><i class="fas fa-trash"></i> Remove Day</button>
+                </div>
+              </div>
+            </div>
+            <% } %>
+          </div>
+        </div>
+        <div class="accordion" id="thingsToCarryAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="thingsToCarryHeading" data-bs-theme="dark">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#thingsToCarryCollapse" aria-expanded="false" aria-controls="thingsToCarryCollapse">
+                Things to Carry
+              </button>
+            </h2>
+            <div id="thingsToCarryCollapse" class="accordion-collapse collapse" aria-labelledby="thingsToCarryHeading" data-bs-parent="#thingsToCarryAccordion">
+              <div class="accordion-body">
+                <div class="editor-container" id="things_to_carry-editor"><%- trips.things_to_carry || '' %></div>
+                <small class="text-danger d-none" id="thingsToCarryError">Things to carry field is required (Max: 500 characters).</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="accordion" id="includeExcludeAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="includeExcludeHeading" data-bs-theme="dark">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#includeExcludeCollapse" aria-expanded="false" aria-controls="includeExcludeCollapse">
+                Include & Exclude
+              </button>
+            </h2>
+            <div id="includeExcludeCollapse" class="accordion-collapse collapse" aria-labelledby="includeExcludeHeading" data-bs-parent="#includeExcludeAccordion">
+              <div class="accordion-body">
+                <div class="editor-container" id="includenexclude-editor"><%- trips.includenexclude || '' %></div>
+                <small class="text-danger d-none" id="includeExcludeError">Include/Exclude field is required (Max: 500 characters).</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="accordion" id="packageCostAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="packageCostHeading" data-bs-theme="dark">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#packageCostCollapse" aria-expanded="false" aria-controls="packageCostCollapse">
+                Package Cost
+              </button>
+            </h2>
+            <div id="packageCostCollapse" class="accordion-collapse collapse" aria-labelledby="packageCostHeading" data-bs-parent="#packageCostAccordion">
+              <div class="accordion-body">
+                <div class="editor-container" id="package_cost-editor"><%- trips.package_cost || '' %></div>
+                <small class="text-danger d-none" id="packageCostError">Package cost field is required (Max: 500 characters).</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="accordion" id="infoFaqAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="infoFaqHeading" data-bs-theme="dark">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#infoFaqCollapse" aria-expanded="false" aria-controls="infoFaqCollapse">
+                Info & FAQs
+              </button>
+            </h2>
+            <div id="infoFaqCollapse" class="accordion-collapse collapse" aria-labelledby="infoFaqHeading" data-bs-parent="#infoFaqAccordion">
+              <div class="accordion-body">
+                <div class="editor-container" id="infonfaq-editor"><%- trips.infonfaq || '' %></div>
+                <small class="text-danger d-none" id="infoFaqError">Info & FAQs field is required (Max: 500 characters).</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="accordion" id="bookCancelAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="bookCancelHeading" data-bs-theme="dark">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#bookCancelCollapse" aria-expanded="false" aria-controls="bookCancelCollapse">
+                Booking & Cancellation
+              </button>
+            </h2>
+            <div id="bookCancelCollapse" class="accordion-collapse collapse" aria-labelledby="bookCancelHeading" data-bs-parent="#bookCancelAccordion">
+              <div class="accordion-body">
+                <div class="editor-container" id="bookncancel-editor"><%- trips.bookncancel || '' %></div>
+                <small class="text-danger d-none" id="bookCancelError">Booking & Cancellation field is required (Max: 500 characters).</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="accordion" id="guidelinesAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="guidelinesHeading" data-bs-theme="dark">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#guidelinesCollapse" aria-expanded="false" aria-controls="guidelinesCollapse">
+                Travel Guidelines
+              </button>
+            </h2>
+            <div id="guidelinesCollapse" class="accordion-collapse collapse" aria-labelledby="guidelinesHeading" data-bs-parent="#guidelinesAccordion">
+              <div class="accordion-body">
+                <div class="editor-container" id="guidelines-editor"><%- trips.guidelines || '' %></div>
+                <small class="text-danger d-none" id="guidelinesError">Guidelines field is required (Max: 500 characters).</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Submit Buttons -->
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+          <button type="submit" id="submitBtn" class="btn btn-primary"><i class="fas fa-save"></i> Submit</button>
+          <button type="button" id="saveDraftBtn" class="btn btn-secondary ms-2"><i class="fas fa-file-alt"></i> Save as Draft</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- Image Modal -->
+  <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-image me-2"></i> Image Preview</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center">
+          <img id="fullSizeImage" class="img-fluid rounded" alt="Full Preview">
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- PDF Modal -->
+  <div class="modal fade" id="pdfModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-file-pdf me-2"></i> PDF Preview</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <embed id="fullSizePdf" src="" type="application/pdf" style="width: 100%; height: 600px; border-radius: 6px;">
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Message Modal -->
+  <div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="messageModalLabel"><i class="fas fa-bell me-2"></i> Notification</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="messageModalBody"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="messageModalClose">Close</button>
+          <button type="button" class="btn btn-primary d-none" id="messageModalAction">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts (Unchanged) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="/vendor/select2/select2.min.js"></script>
+  <script src="https://unpkg.com/filepond@4.30.6/dist/filepond.js"></script>
+  <script src="https://unpkg.com/filepond-plugin-image-preview@4.6.12/dist/filepond-plugin-image-preview.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13"></script>
+  <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/quill-image-resize-module@3.0.0/image-resize.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      // Initialize Select2 for all elements except tripCategories (which will be initialized after data is loaded)
+      $(".select2:not(#tripCategories)").select2();
+      $("#imageModal").on("hidden.bs.modal", function() {
+        $(".modal-backdrop").remove();
+        $("body").removeClass("modal-open");
+      });
+
+      $(document).ready(function() {
+  // Select2 initialization is handled above
+
+  // Cleanup for imageModal
+  $("#imageModal").on("hidden.bs.modal", function() {
+    try {
+      $(".modal-backdrop").remove();
+      $("body").removeClass("modal-open").css({ overflow: '', paddingRight: '' });
+    } catch (error) {
+      console.error('Error in imageModal hidden.bs.modal:', error);
+    }
+  });
+
+  // Cleanup for pdfModal
+  $("#pdfModal").on("hidden.bs.modal", function() {
+    try {
+      $(".modal-backdrop").remove();
+      $("body").removeClass("modal-open").css({ overflow: '', paddingRight: '' });
+    } catch (error) {
+      console.error('Error in pdfModal hidden.bs.modal:', error);
+    }
+  });
+
+  // Cleanup for messageModal
+  $("#messageModal").on("hidden.bs.modal", function() {
+    try {
+      $(".modal-backdrop").remove();
+      $("body").removeClass("modal-open").css({ overflow: '', paddingRight: '' });
+      // Ensure Select2 dropdowns are interactive (except tripCategories which is handled separately)
+      $(".select2:not(#tripCategories)").select2();
+    } catch (error) {
+      console.error('Error in messageModal hidden.bs.modal:', error);
+    }
+  });
+});
+    });
+
+
+    const csrfToken = document.querySelector('input[name="_csrf"]').value;
+
+    // Common Response Handler
+    function handleResponse(response, status) {
+      const modal = new bootstrap.Modal(document.getElementById('messageModal'));
+      const modalBody = document.getElementById('messageModalBody');
+      const modalAction = document.getElementById('messageModalAction');
+      const modalClose = document.getElementById('messageModalClose');
+
+      modalAction.classList.add('d-none');
+      modalClose.style.display = 'block';
+
+      if (status >= 200 && status < 300) {
+        // Success cases (add or update)
+        modalBody.innerHTML = `<p class="text-success">${response.message}</p>`;
+        modalAction.classList.remove('d-none');
+        modalAction.textContent = 'OK';
+        modalAction.onclick = () => {
+          modal.hide();
+          // Redirect to the form with the tripid
+          const tripId = response.trip._id;
+          window.location.href = `/admin/addtours?tripid=${tripId}`;
+        };
+        modalClose.style.display = 'none';
+      } else if (status === 400) {
+        // Validation errors
+        modalBody.innerHTML = `<p class="text-danger">${response.message}</p>`;
+        if (response.exists) {
+          document.getElementById('nameError').classList.remove('d-none');
+        }
+      } else {
+        // Server errors (500, etc.)
+        modalBody.innerHTML = `<p class="text-danger">Error: ${response.message || 'An unexpected error occurred'}</p>`;
+      }
+
+      modal.show();
+    }
+
+    /**
+     * Formats dates into the structure expected by MongoDB.
+     * @param {string[]} dates - Array of dates in "YYYY-MM-DD" format.
+     * @returns {Object[]} Array of objects with Year, Month, and dates.
+     */
+    function formatUTCDate(date) {
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, "0"); // Months are 0-based
+      const day = String(date.getUTCDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    /**
+     * Formats dates into the structure expected by MongoDB, using UTC.
+     * @param {string[]} dates - Array of dates in "YYYY-MM-DD" format or Date objects.
+     * @returns {Object[]} Array of objects with Year, Month, and dates.
+     */
+    function formatDatesForMongoDB(dates) {
+      const grouped = {};
+      dates.forEach(date => {
+        // If date is a string (e.g., "2025-03-20"), parse it as a local date
+        const d = typeof date === "string" ? new Date(date) : date;
+        // Convert to UTC
+        const utcDate = new Date(Date.UTC(
+          d.getFullYear(),
+          d.getMonth(),
+          d.getDate()
+        ));
+        const utcDateStr = formatUTCDate(utcDate); // e.g., "2025-03-19" in UTC
+        const [year, month, day] = utcDateStr.split("-");
+        const monthName = new Date(utcDate).toLocaleString("en-US", {
+          month: "long",
+          timeZone: "UTC"
+        });
+        if (!grouped[year]) grouped[year] = {};
+        if (!grouped[year][monthName]) grouped[year][monthName] = [];
+        grouped[year][monthName].push(day);
+      });
+      return Object.entries(grouped).flatMap(([year, months]) =>
+        Object.entries(months).map(([month, days]) => ({
+          Year: year,
+          Month: month,
+          dates: days.join(", ")
+        }))
+      );
+    }
+    // Fetch and populate trip categories
+    async function fetchCategories() {
+      try {
+        const response = await fetch('/getCategoryList', {
+          method: 'GET',
+          headers: {
+            'X-CSRF-Token': csrfToken
+          }
+        });
+        const data = await response.json();
+        if (data.success) {
+          populateCategoryDropdown(data.categories);
+          checkNonExistentCategories(data.categories);
+        } else {
+          console.error('Error fetching categories:', data.message);
+          showCategoryWarning('Failed to load categories. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        showCategoryWarning('Error loading categories. Please try again.');
+      }
+    }
+
+    // Populate the category dropdown
+    function populateCategoryDropdown(categories) {
+      const select = document.getElementById('tripCategories');
+      // Get the saved trip categories from the server-side data
+      const tripCategories = <%- JSON.stringify(trips.tripCategories || []) %>;
+      
+      console.log('Populating trip categories dropdown with:', tripCategories);
+      
+      select.innerHTML = ''; // Clear existing options
+      categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.name;
+        option.textContent = category.name;
+        // Check if this category should be selected based on saved trip data
+        if (tripCategories.includes(category.name)) {
+          option.selected = true;
+          console.log('Selected category:', category.name);
+        }
+        select.appendChild(option);
+      });
+      
+      // Destroy existing Select2 instance if it exists
+      if ($(select).hasClass('select2-hidden-accessible')) {
+        $(select).select2('destroy');
+      }
+      
+      // Initialize Select2 with proper configuration
+      $(select).select2({
+        placeholder: 'Select Trip Categories',
+        allowClear: true,
+        width: '100%'
+      });
+      
+      console.log('Trip categories dropdown populated and initialized');
+    }
+
+    // Check for categories in trips.tripCategories that don't exist in master data
+    function checkNonExistentCategories(masterCategories) {
+      const tripCategories = <%- JSON.stringify(trips.tripCategories || []) %>;
+      const masterCategoryNames = masterCategories.map(cat => cat.name);
+      const nonExistent = tripCategories.filter(cat => !masterCategoryNames.includes(cat));
+
+      if (nonExistent.length > 0) {
+        const modal = new bootstrap.Modal(document.getElementById('messageModal'));
+        const modalBody = document.getElementById('messageModalBody');
+        const modalAction = document.getElementById('messageModalAction');
+        const modalClose = document.getElementById('messageModalClose');
+
+        modalBody.innerHTML = `
+      <p class="text-warning">
+        The following categories are not in the master list: <strong>${nonExistent.join(', ')}</strong>.<br>
+        <a href="/categories" target="_blank">Update or add categories</a> to include them, or click OK to continue without these categories.
+      </p>
+    `;
+        modalAction.classList.remove('d-none');
+        modalAction.textContent = 'OK';
+        modalAction.onclick = () => modal.hide();
+        modalClose.style.display = 'block';
+        modal.show();
+      }
+    }
+
+    // Show generic warning message in modal
+    function showCategoryWarning(message) {
+      const modal = new bootstrap.Modal(document.getElementById('messageModal'));
+      const modalBody = document.getElementById('messageModalBody');
+      const modalAction = document.getElementById('messageModalAction');
+      const modalClose = document.getElementById('messageModalClose');
+
+      modalBody.innerHTML = `<p class="text-danger">${message}</p>`;
+      modalAction.classList.add('d-none');
+      modalClose.style.display = 'block';
+      modal.show();
+    }
+
+    // Initialize categories on page load
+    fetchCategories();
+
+    // Refresh categories on button click
+    document.getElementById('refreshCategories').addEventListener('click', () => {
+      fetchCategories();
+    });
+
+    // Add after fetchCategories functions, before Quill Editors initialization
+
+    // Fetch and populate regions (states)
+    async function fetchRegions() {
+      try {
+        const response = await fetch('/getStateList', {
+          method: 'GET',
+          headers: {
+            'X-CSRF-Token': csrfToken
+          }
+        });
+        const data = await response.json();
+        if (data.success) {
+          populateRegionDropdown(data.states);
+          checkNonExistentRegions(data.states);
+        } else {
+          console.error('Error fetching regions:', data.message);
+          showRegionWarning('Failed to load regions. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error fetching regions:', error);
+        showRegionWarning('Error loading regions. Please try again.');
+      }
+    }
+
+    // Populate the region dropdown
+    function populateRegionDropdown(states) {
+      const select = document.getElementById('state');
+      const savedState = '<%- trips.state || "" %>'; // Get saved state from trips
+      select.innerHTML = '<option value="" disabled selected hidden>Select a Region</option>'; // Reset with placeholder
+
+      states.forEach(state => {
+        const option = document.createElement('option');
+        option.value = state.name; // Save only name
+        option.textContent = `${state.name} (${state.countryCode})`; // Display name and countryCode
+        option.dataset.countryCode = state.countryCode; // Store for reference
+        if (state.name === savedState) {
+          option.selected = true; // Pre-select saved state
+        }
+        select.appendChild(option);
+      });
+
+      $(select).select2(); // Reinitialize Select2
+    }
+
+    // Check for state in trips.state that doesn't exist in master data
+    function checkNonExistentRegions(masterStates) {
+  const tripState = '<%- trips.state || "" %>';
+  const masterStateNames = masterStates.map(state => state.name);
+  if (tripState && !masterStateNames.includes(tripState)) {
+    // Hide other modals to prevent backdrop stacking
+    const otherModals = ['imageModal', 'pdfModal'];
+    otherModals.forEach(modalId => {
+      const modalElement = document.getElementById(modalId);
+      if (modalElement) {
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+          modalInstance.hide();
+        }
+      }
+    });
+
+    const modal = new bootstrap.Modal(document.getElementById('messageModal'), { backdrop: true });
+    const modalBody = document.getElementById('messageModalBody');
+    const modalAction = document.getElementById('messageModalAction');
+    const modalClose = document.getElementById('messageModalClose');
+
+    modalBody.innerHTML = `
+      <p class="text-warning">
+        The selected region <strong>${tripState}</strong> is not in the master list.<br>
+        <a href="/state" target="_blank">Update or add regions</a> to include it, or click OK to continue without this region.
+      </p>
+    `;
+    modalAction.classList.remove('d-none');
+    modalAction.textContent = 'OK';
+    modalAction.onclick = () => {
+      try {
+        document.getElementById('state').value = ''; // Clear invalid state
+        $(document.getElementById('state')).select2(); // Update Select2
+        modal.hide();
+        // Forcefully clean up modal states
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = ''; // Restore scrolling
+        document.body.style.paddingRight = ''; // Remove padding added by Bootstrap
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+          backdrop.remove();
+        }
+      } catch (error) {
+        console.error('Error in modalAction.onclick:', error);
+      }
+    };
+    modalClose.style.display = 'block';
+    modal.show();
+  }
+}
+
+    // Show region-related warning in modal
+    function showRegionWarning(message) {
+      const modal = new bootstrap.Modal(document.getElementById('messageModal'));
+      const modalBody = document.getElementById('messageModalBody');
+      const modalAction = document.getElementById('messageModalAction');
+      const modalClose = document.getElementById('messageModalClose');
+
+      modalBody.innerHTML = `<p class="text-danger">${message}</p>`;
+      modalAction.classList.add('d-none');
+      modalClose.style.display = 'block';
+      modal.show();
+    }
+
+    // Initialize regions on page load
+    fetchRegions();
+
+    // Refresh regions on button click
+    document.getElementById('refreshRegions').addEventListener('click', () => {
+      fetchRegions();
+    });
+
+
+    // Quill Editors for static sections
+    const staticEditors = {};
+    const editorIds = [
+      "about-editor", "activities-editor",
+      "things_to_carry-editor", "includenexclude-editor", "package_cost-editor",
+      "infonfaq-editor", "guidelines-editor", "bookncancel-editor"
+    ];
+
+    // Trip Name Uniqueness Check
+    let lastCheckedName = "";
+    $("#name").on("blur", function() {
+      let tripName = $(this).val().trim();
+      const tripId = $("#tripId").val();
+      if (!tripName || tripName === lastCheckedName) return;
+      lastCheckedName = tripName;
+      $.ajax({
+        url: "/getCheckToursUnique",
+        type: "POST",
+        headers: {
+          "X-CSRF-Token": csrfToken
+        },
+        data: {
+          name: tripName,
+          tripId: tripId || undefined
+        },
+        success: function(response) {
+          const nameError = $("#nameError");
+          const submitBtn = $("#submitBtn");
+          if (response.exists) {
+            nameError.removeClass("d-none");
+            submitBtn.prop("disabled", true);
+          } else {
+            nameError.addClass("d-none");
+            submitBtn.prop("disabled", false);
+          }
+        },
+        error: function() {
+          console.error("Error checking trip name.");
+        },
+      });
+    });
+
+    // Fetch Cities
+    async function fetchCities() {
+      try {
+        const response = await fetch("/getCityList");
+        const data = await response.json();
+        return data.success ? data.cities : [];
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+        return [];
+      }
+    }
+
+    // Populate City Dropdown
+    async function populateCityDropdown(selectElement, selectedCity = "") {
+      const cities = await fetchCities();
+      selectElement.innerHTML = '<option value="">Select City</option>';
+      cities.forEach(city => {
+        const option = document.createElement("option");
+        option.value = city.name;
+        option.textContent = city.name;
+        option.dataset.state = city.state;
+        option.dataset.image = city.image;
+        if (city.name === selectedCity) option.selected = true;
+        selectElement.appendChild(option);
+      });
+    }
+
+    // Image Preview
+    document.addEventListener("DOMContentLoaded", function() {
+      const mainImageInput = document.getElementById("file");
+      const mainImagePreview = document.getElementById("mainImagePreview");
+      const mainImagePreviewContainer = document.getElementById("mainImagePreviewContainer");
+      const removeMainImageButton = document.getElementById("removeMainImage");
+      const bannerImageInput = document.getElementById("bannerImages");
+      const bannerPreviewContainer = document.getElementById("bannerPreviewContainer");
+
+      mainImageInput.addEventListener("change", function() {
+        const file = this.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            mainImagePreview.src = e.target.result;
+            mainImagePreviewContainer.style.display = "block";
+            removeMainImageButton.style.display = "block";
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      mainImagePreview.addEventListener("click", function() {
+        document.getElementById("fullSizeImage").src = this.src;
+      });
+
+      $("#removeMainImage").click(function() {
+        $("#mainImagePreview").attr("src", "");
+        $("#mainImagePreviewContainer").hide();
+        $("#file").val("");
+      });
+
+      bannerImageInput.addEventListener("change", function() {
+        bannerPreviewContainer.innerHTML = "";
+        Array.from(this.files).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const img = document.createElement("img");
+            img.src = e.target.result;
+            img.classList.add("img-thumbnail");
+            img.setAttribute("data-bs-toggle", "modal");
+            img.setAttribute("data-bs-target", "#imageModal");
+            img.addEventListener("click", function() {
+              document.getElementById("fullSizeImage").src = this.src;
+            });
+            bannerPreviewContainer.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+    });
+
+    // PDF Upload and Preview
+    document.addEventListener("DOMContentLoaded", function() {
+      const documentInput = document.getElementById("document");
+      const pdfPreview = document.getElementById("pdfPreview");
+      const pdfPreviewContainer = document.getElementById("pdfPreviewContainer");
+      const removePdfButton = document.getElementById("removePdf");
+      const documentError = document.getElementById("documentError");
+      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+      documentInput.addEventListener("change", function() {
+        const file = this.files[0];
+        documentError.classList.add("d-none");
+
+        if (file) {
+          // Validate file type and size
+          if (file.type !== "application/pdf") {
+            documentError.textContent = "Only PDF files are allowed.";
+            documentError.classList.remove("d-none");
+            this.value = "";
+            return;
+          }
+          if (file.size > MAX_FILE_SIZE) {
+            documentError.textContent = "File size exceeds 5MB.";
+            documentError.classList.remove("d-none");
+            this.value = "";
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            pdfPreview.src = e.target.result;
+            pdfPreviewContainer.style.display = "block";
+            removePdfButton.style.display = "block";
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      pdfPreview.addEventListener("click", function() {
+        document.getElementById("fullSizePdf").src = this.src;
+      });
+
+      removePdfButton.addEventListener("click", function() {
+        pdfPreview.src = "";
+        pdfPreviewContainer.style.display = "none";
+        removePdfButton.style.display = "none";
+        documentInput.value = "";
+        document.querySelector('input[name="existingDocument"]').value = "";
+      });
+    });
+
+    // manage city detail add update and all other event are managed from here
+    document.addEventListener("DOMContentLoaded", function() {
+      const cityContainer = document.getElementById("cityContainer");
+      const addCityBtn = document.getElementById("addCity");
+      let selectedCities = new Set();
+
+      /**
+       * Initializes all city entries on page load, handling both add and update cases.
+       * @async
+       */
+      async function initializeCityEntries() {
+        const trips = <%- JSON.stringify(trips || {}) %>;
+        const cityContainer = document.getElementById("cityContainer");
+
+        // Clear existing entries except the template
+        const firstCityEntry = document.querySelector(".city-entry");
+        await populateCityDropdown(firstCityEntry.querySelector(".city-select"));
+
+        if (trips.deptcities && trips.deptcities.length > 0) {
+          // Populate first city
+          firstCityEntry.querySelector("#pricingContainer").innerHTML = ""; // Clear default pricing
+          populateCityEntry(firstCityEntry, trips.deptcities[0]);
+          initializeFlatpickr(firstCityEntry, trips.deptcities[0].dates);
+          addEventListenersToEntry(firstCityEntry);
+          updateAddPricingButtonState(firstCityEntry); // Explicitly update button state after population
+
+          // Add additional cities
+          for (let i = 1; i < trips.deptcities.length; i++) {
+            const newEntry = await addCityEntry(trips.deptcities[i]);
+            populateCityEntry(newEntry, trips.deptcities[i]);
+            initializeFlatpickr(newEntry, trips.deptcities[i].dates);
+            updateAddPricingButtonState(newEntry); // Explicitly update button state for each new entry
+          }
+        } else {
+          firstCityEntry.querySelector("#pricingContainer").innerHTML = "";
+          addPricingRow(firstCityEntry);
+          initializeFlatpickr(firstCityEntry);
+          addEventListenersToEntry(firstCityEntry);
+          updateAddPricingButtonState(firstCityEntry); // Update for default case
+        }
+
+        updateAddCityButtonState();
+        toggleRemoveCityButtons();
+      }
+
+
+      /**
+       * Adds a new city entry dynamically.
+       * @async
+       * @param {Object|null} cityData - Data for pre-filling the entry (update case).
+       * @returns {HTMLElement} The newly created city entry element.
+       */
+      async function addCityEntry(cityData = null) {
+        const template = document.querySelector(".city-entry").cloneNode(true);
+        template.querySelector(".city-select").value = "";
+        template.querySelector(".state-field").value = "";
+        template.querySelector(".city-image").src = "";
+        template.querySelector(".city-image").style.display = "none";
+        template.querySelector(".tripDuration").value = "";
+        template.querySelector(".datePicking").value = "";
+        template.querySelector(".datePreview").innerHTML = "";
+        template.querySelector("#pricingContainer").innerHTML = `
+      <div class="row gy-3 pricingRow">
+        <div class="col-12 col-sm-6 col-md-4">
+          <label class="form-label">Transport Type</label>
+          <input type="text" class="form-control transferType" name="transferType[]" placeholder="Transport Type">
+          <p class="invalid-feedback">Transport Type is required and must be unique.</p>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+          <label class="form-label">Child Price</label>
+          <input type="number" class="form-control childPrice" name="childPrice[]" placeholder="Enter price per child">
+          <p class="invalid-feedback">Child Price is required.</p>
+        </div>
+        <div class="col-12 col-md-4 position-relative">
+          <label class="form-label">Adult Price</label>
+          <input type="number" class="form-control adultPrice" name="adultPrice[]" placeholder="Enter price per adult">
+          <p class="invalid-feedback">Adult Price is required.</p>
+          <button type="button" class="btn btn-danger btn-sm removeRow mt-3 ms-auto d-none rounded-pill"><i class="bi bi-x-circle"></i> Remove Price</button>
+        </div>
+      </div>`;
+        cityContainer.appendChild(template);
+        const select = template.querySelector(".city-select");
+        await populateCityDropdown(select, cityData?.City);
+        if (cityData) {
+          populateCityEntry(template, cityData);
+          initializeFlatpickr(template, cityData.dates);
+        } else {
+          initializeFlatpickr(template);
+        }
+        addEventListenersToEntry(template);
+        updateAddCityButtonState();
+        return template;
+      }
+
+      /**
+       * Populates a city entry with saved data (update case).
+       * @param {HTMLElement} entry - The city entry element to populate.
+       * @param {Object} cityData - Saved city data from the database.
+       */
+      function populateCityEntry(entry, cityData) {
+        const select = entry.querySelector(".city-select");
+        const stateField = entry.querySelector(".state-field");
+        const imageField = entry.querySelector(".city-image");
+        const tripDurationField = entry.querySelector(".tripDuration");
+        const pricingContainer = entry.querySelector("#pricingContainer");
+        // Add new fields
+        const availableSlotsField = entry.querySelector(".availableSlots");
+        const partialPaymentField = entry.querySelector(".partialPayment");
+        const bookingCutoffDaysField = entry.querySelector(".bookingCutoffDays");
+
+        select.value = cityData.City || "";
+        const selectedOption = Array.from(select.options).find(option => option.value === cityData.City);
+        if (selectedOption) {
+          stateField.value = selectedOption.dataset.state || cityData.State || "";
+          imageField.src = selectedOption.dataset.image || "";
+          imageField.style.display = imageField.src ? "block" : "none";
+        }
+        tripDurationField.value = cityData.tripDuration || "";
+
+        // Populate new fields
+        availableSlotsField.value = cityData.availableSlots || "";
+        partialPaymentField.value = cityData.partialPayment || "";
+        bookingCutoffDaysField.value = cityData.bookingCutoffDays || "";
+        selectedCities.add(cityData.City);
+
+        // Clear existing pricing rows and populate from data
+        pricingContainer.innerHTML = "";
+        if (cityData.price && cityData.price.length > 0) {
+          cityData.price.forEach((price, index) => {
+            const row = addPricingRow(entry, price);
+            if (index === 0) row.querySelector(".removeRow").classList.add('d-none'); // Hide remove for first row
+          });
+        } else {
+          addPricingRow(entry); // Add one default row if no pricing data
+        }
+
+        updatePricingButtons(entry);
+        updateAddPricingButtonState(entry);
+        select.dispatchEvent(new Event("change"));
+      }
+      /**
+       * Fetches and populates the city dropdown with options.
+       * @async
+       * @param {HTMLSelectElement} selectElement - The select element to populate.
+       * @param {string} [selectedCity=""] - The pre-selected city (update case).
+       */
+      async function populateCityDropdown(selectElement, selectedCity = "") {
+        const cities = await fetchCities();
+        selectElement.innerHTML = '<option value="">Select City</option>';
+        cities.forEach(city => {
+          const option = document.createElement("option");
+          option.value = city.name;
+          option.textContent = city.name;
+          option.dataset.state = city.state;
+          option.dataset.image = city.image;
+          if (city.name === selectedCity) option.selected = true;
+          selectElement.appendChild(option);
+        });
+      }
+
+      /**
+       * Adds event listeners to a city entry for dynamic interactions.
+       * @param {HTMLElement} entry - The city entry element.
+       */
+      function addEventListenersToEntry(entry) {
+        entry.querySelector(".remove-city").addEventListener("click", () => {
+          selectedCities.delete(entry.querySelector(".city-select").value);
+          entry.remove();
+          updateAddCityButtonState();
+          toggleRemoveCityButtons();
+        });
+
+        const addRowBtn = entry.querySelector("#addRow");
+        addRowBtn.addEventListener("click", () => {
+          if (!addRowBtn.disabled) {
+            const transferTypes = Array.from(entry.querySelectorAll(".transferType")).map(input => input.value.trim());
+            const newRow = addPricingRow(entry);
+            newRow.querySelector(".transferType").addEventListener("blur", function() {
+              if (transferTypes.includes(this.value.trim()) && this.value.trim()) {
+                this.classList.add("is-invalid");
+                this.nextElementSibling.textContent = "Transport Type must be unique within this city.";
+              } else {
+                this.classList.remove("is-invalid");
+              }
+              updateAddPricingButtonState(entry);
+            });
+            updatePricingButtons(entry);
+            updateAddCityButtonState();
+            updateAddPricingButtonState(entry);
+          }
+        });
+
+        entry.querySelector(".clearDates").addEventListener("click", (e) => {
+          e.preventDefault();
+          const fp = entry.querySelector(".datePicking")._flatpickr;
+          fp.clear();
+          entry.querySelector(".datePreview").innerHTML = "";
+          entry.querySelector(".error-msg").classList.add("d-none");
+          updateAddPricingButtonState(entry);
+        });
+
+        // Add input listeners for all fields
+        const inputs = entry.querySelectorAll(".transferType, .childPrice, .adultPrice, .tripDuration, .availableSlots, .partialPayment, .bookingCutoffDays");
+        inputs.forEach(input => {
+          input.addEventListener("input", () => {
+            if (input.classList.contains("availableSlots") || input.classList.contains("partialPayment") || input.classList.contains("bookingCutoffDays")) {
+              // Optional fields: validate only if value exists
+              input.classList.toggle("is-invalid", input.value.trim() && (isNaN(input.value) || parseFloat(input.value) < 0));
+            } else {
+              // Required fields
+              input.classList.toggle("is-invalid", !input.value.trim());
+            }
+            updateAddPricingButtonState(entry);
+            updateAddCityButtonState();
+          });
+        });
+
+        entry.querySelector(".city-select").addEventListener("change", () => {
+          updateAddPricingButtonState(entry);
+        });
+      }
+
+      /**
+       * Adds a pricing row to a city entry.
+       * @param {HTMLElement} entry - The city entry element.
+       * @param {Object|null} priceData - Saved price data (update case).
+       * @returns {HTMLElement} The newly created pricing row.
+       */
+      function addPricingRow(entry, priceData = null) {
+        const container = entry.querySelector("#pricingContainer");
+        const row = document.createElement("div");
+        row.classList.add("row", "gy-3", "pricingRow");
+        row.innerHTML = `
+      <div class="col-12 col-sm-6 col-md-4">
+        <label class="form-label">Transport Type</label>
+        <input type="text" class="form-control transferType" name="transferType[]" placeholder="Transport Type">
+        <p class="invalid-feedback">Transport Type is required and must be unique.</p>
+      </div>
+      <div class="col-12 col-sm-6 col-md-4">
+        <label class="form-label">Child Price</label>
+        <input type="number" class="form-control childPrice" name="childPrice[]" placeholder="Enter price per child">
+        <p class="invalid-feedback">Child Price is required.</p>
+      </div>
+      <div class="col-12 col-md-4 position-relative">
+        <label class="form-label">Adult Price</label>
+        <input type="number" class="form-control adultPrice" name="adultPrice[]" placeholder="Enter price per adult">
+        <p class="invalid-feedback">Adult Price is required.</p>
+        <button type="button" class="btn btn-danger btn-sm removeRow mt-3 ms-auto rounded-pill"><i class="bi bi-x-circle"></i> Remove Price</button>
+      </div>`;
+
+        if (priceData) {
+          row.querySelector(".transferType").value = priceData.transferType || "";
+          row.querySelector(".childPrice").value = priceData.childPrice || "";
+          row.querySelector(".adultPrice").value = priceData.adultPrice || "";
+        }
+
+        container.appendChild(row);
+
+        // Add event listeners to new inputs
+        const inputs = row.querySelectorAll(".transferType, .childPrice, .adultPrice");
+        inputs.forEach(input => {
+          input.addEventListener("input", () => {
+            input.classList.toggle("is-invalid", !input.value.trim());
+            updateAddPricingButtonState(entry);
+          });
+        });
+
+        // Validate transfer type uniqueness
+        row.querySelector(".transferType").addEventListener("blur", function() {
+          const transferTypes = Array.from(entry.querySelectorAll(".transferType"))
+            .map(t => t.value.trim())
+            .filter((v, i, self) => v && self.indexOf(v) === i);
+          if (transferTypes.filter(t => t === this.value.trim()).length > 1) {
+            this.classList.add("is-invalid");
+            this.nextElementSibling.textContent = "Transport Type must be unique within this city.";
+          } else {
+            this.classList.remove("is-invalid");
+            this.nextElementSibling.textContent = "Transport Type is required and must be unique.";
+          }
+          updateAddPricingButtonState(entry);
+        });
+
+        row.querySelector(".removeRow").addEventListener("click", () => {
+          row.remove();
+          updatePricingButtons(entry);
+          updateAddCityButtonState();
+          updateAddPricingButtonState(entry);
+        });
+
+        updatePricingButtons(entry);
+        return row;
+      }
+
+      /**
+       * Updates visibility of pricing row remove buttons.
+       * @param {HTMLElement} entry - The city entry element.
+       */
+      function updatePricingButtons(entry) {
+        const pricingRows = entry.querySelectorAll(".pricingRow");
+        const removeButtons = entry.querySelectorAll(".removeRow");
+        if (pricingRows.length > 1) {
+          removeButtons.forEach(btn => btn.classList.remove('d-none'));
+        } else {
+          removeButtons.forEach(btn => btn.classList.add('d-none'));
+        }
+      }
+
+      /**
+       * Toggles visibility of remove city buttons based on number of cities.
+       */
+      function toggleRemoveCityButtons() {
+        const cityEntries = document.querySelectorAll(".city-entry");
+        const removeCityButtons = document.querySelectorAll(".remove-city");
+        if (cityEntries.length > 1) {
+          removeCityButtons.forEach(btn => btn.style.display = "flex");
+        } else {
+          removeCityButtons.forEach(btn => btn.style.display = "none");
+        }
+      }
+
+      /**
+       * Updates the state of the "Add City" button based on form validity across all entries.
+       */
+      function updateAddCityButtonState() {
+        const cityEntries = document.querySelectorAll(".city-entry");
+        let allValid = true;
+        cityEntries.forEach(entry => {
+          const citySelect = entry.querySelector(".city-select").value;
+          const pricingRows = entry.querySelectorAll(".pricingRow");
+          const dates = entry.querySelector(".datePicking")._flatpickr?.selectedDates || [];
+          const tripDuration = entry.querySelector(".tripDuration").value.trim();
+          // Add new fields
+          const availableSlots = entry.querySelector(".availableSlots").value.trim();
+          const partialPayment = entry.querySelector(".partialPayment").value.trim();
+          const bookingCutoffDays = entry.querySelector(".bookingCutoffDays").value.trim();
+
+          if (!citySelect || dates.length === 0 || !tripDuration) allValid = false;
+          if (!citySelect) entry.querySelector(".city-select").classList.add("is-invalid");
+          if (!tripDuration) entry.querySelector(".tripDuration").classList.add("is-invalid");
+
+          // Validate new fields
+          if (availableSlots && (isNaN(availableSlots) || parseFloat(availableSlots) < 0)) {
+            allValid = false;
+            entry.querySelector(".availableSlots").classList.add("is-invalid");
+          }
+          if (partialPayment && (isNaN(partialPayment) || parseFloat(partialPayment) < 0)) {
+            allValid = false;
+            entry.querySelector(".partialPayment").classList.add("is-invalid");
+          }
+          if (bookingCutoffDays && (isNaN(bookingCutoffDays) || parseFloat(bookingCutoffDays) < 0)) {
+            allValid = false;
+            entry.querySelector(".bookingCutoffDays").classList.add("is-invalid");
+          }
+
+          pricingRows.forEach(row => {
+            const transferType = row.querySelector(".transferType").value.trim();
+            const childPrice = row.querySelector(".childPrice").value.trim();
+            const adultPrice = row.querySelector(".adultPrice").value.trim();
+            if (!transferType || !childPrice || !adultPrice) allValid = false;
+            row.querySelector(".transferType").classList.toggle("is-invalid", !transferType);
+            row.querySelector(".childPrice").classList.toggle("is-invalid", !childPrice);
+            row.querySelector(".adultPrice").classList.toggle("is-invalid", !adultPrice);
+          });
+        });
+        addCityBtn.disabled = !allValid;
+        toggleRemoveCityButtons();
+      }
+
+      /**
+       * Updates the state of the "Add Pricing" button for a specific city entry.
+       * @param {HTMLElement} entry - The city entry element to validate.
+       */
+      function updateAddPricingButtonState(entry) {
+        const addRowBtn = entry.querySelector("#addRow");
+        const citySelect = entry.querySelector(".city-select").value;
+        const tripDuration = entry.querySelector(".tripDuration").value.trim();
+        const pricingRows = entry.querySelectorAll(".pricingRow");
+        const dates = entry.querySelector(".datePicking")._flatpickr?.selectedDates || [];
+        // Add new fields
+        const availableSlots = entry.querySelector(".availableSlots").value.trim();
+        const partialPayment = entry.querySelector(".partialPayment").value.trim();
+        const bookingCutoffDays = entry.querySelector(".bookingCutoffDays").value.trim();
+
+        // Validate required fields
+        let allValid = citySelect && tripDuration && dates.length > 0;
+
+        // Validate and toggle error states for required fields
+        entry.querySelector(".city-select").classList.toggle("is-invalid", !citySelect);
+        entry.querySelector(".tripDuration").classList.toggle("is-invalid", !tripDuration);
+
+        // Validate new fields (optional, but must be non-negative if provided)
+        if (availableSlots && (isNaN(availableSlots) || parseFloat(availableSlots) < 0)) {
+          allValid = false;
+          entry.querySelector(".availableSlots").classList.add("is-invalid");
+        } else {
+          entry.querySelector(".availableSlots").classList.remove("is-invalid");
+        }
+        if (partialPayment && (isNaN(partialPayment) || parseFloat(partialPayment) < 0)) {
+          allValid = false;
+          entry.querySelector(".partialPayment").classList.add("is-invalid");
+        } else {
+          entry.querySelector(".partialPayment").classList.remove("is-invalid");
+        }
+        if (bookingCutoffDays && (isNaN(bookingCutoffDays) || parseFloat(bookingCutoffDays) < 0)) {
+          allValid = false;
+          entry.querySelector(".bookingCutoffDays").classList.add("is-invalid");
+        } else {
+          entry.querySelector(".bookingCutoffDays").classList.remove("is-invalid");
+        }
+
+        pricingRows.forEach(row => {
+          const transferType = row.querySelector(".transferType").value.trim();
+          const childPrice = row.querySelector(".childPrice").value.trim();
+          const adultPrice = row.querySelector(".adultPrice").value.trim();
+          const isValidRow = transferType && childPrice && adultPrice;
+          allValid = allValid && isValidRow;
+
+          row.querySelector(".transferType").classList.toggle("is-invalid", !transferType);
+          row.querySelector(".childPrice").classList.toggle("is-invalid", !childPrice);
+          row.querySelector(".adultPrice").classList.toggle("is-invalid", !adultPrice);
+        });
+
+        addRowBtn.disabled = !allValid;
+        console.log(`Add Price button for city ${entry.querySelector(".city-select").value}: ${addRowBtn.disabled ? 'disabled' : 'enabled'}`);
+      }
+      /**
+       * Initializes Flatpickr calendar for a city entry.
+       * @param {HTMLElement} entry - The city entry element.
+       * @param {Array} [initialDates=[]] - Saved dates from the database.
+       */
+
+      function initializeFlatpickr(entry, initialDates = []) {
+        const dateInput = entry.querySelector(".datePicking");
+        const preview = entry.querySelector(".datePreview");
+        const errorMsg = entry.querySelector(".error-msg");
+        let dates = [];
+
+        if (initialDates && initialDates.length > 0) {
+          dates = initialDates.flatMap(d => {
+            const year = d.Year;
+            const month = d.Month;
+            const monthNumber = new Date(`${month} 1, ${year}`).getMonth() + 1;
+            const monthStr = monthNumber.toString().padStart(2, "0");
+            return d.dates.split(", ").map(date => {
+              const day = date.trim().padStart(2, "0");
+              // Parse the date as UTC
+              const utcDate = new Date(Date.UTC(year, monthNumber - 1, day));
+              // Convert to local time for Flatpickr
+              return utcDate;
+            });
+          }).filter(date => {
+            const parsedDate = new Date(date);
+            return parsedDate >= new Date().setHours(0, 0, 0, 0);
+          });
+        }
+
+        if (dateInput._flatpickr) dateInput._flatpickr.destroy();
+
+        const fp = flatpickr(dateInput, {
+          mode: "multiple",
+          dateFormat: "Y-m-d",
+          minDate: "today",
+          defaultDate: dates.length ? dates : null,
+          onReady: function() {
+            updateDatePreview(preview, this.selectedDates);
+          },
+          onChange: function(selectedDates) {
+            updateDatePreview(preview, selectedDates);
+            errorMsg.classList.toggle("d-none", selectedDates.length > 0);
+            updateAddCityButtonState();
+            updateAddPricingButtonState(entry);
+          }
+        });
+
+        if (dates.length) updateDatePreview(preview, dates);
+        else errorMsg.classList.remove("d-none");
+      }
+
+      /**
+       * Formats a Date object to YYYY-MM-DD in the local time zone.
+       * @param {Date} date - The Date object to format.
+       * @returns {string} The formatted date string (e.g., "2025-03-20").
+       */
+      function formatLocalDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
+      function updateDatePreview(preview, dates) {
+        preview.innerHTML = "";
+        dates.forEach((date, index) => {
+          const formattedDate = typeof date === "string" ? date : formatLocalDate(date); // Display in local time
+          preview.innerHTML += `
+      <tr>
+        <td class="text-center">${index + 1}</td>
+        <td class="text-center">${formattedDate}</td>
+        <td class="text-center">
+          <button class="btn btn-danger btn-sm remove-date" data-date="${formattedDate}">Remove</button>
+        </td>
+      </tr>`;
+        });
+        preview.querySelectorAll(".remove-date").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const date = btn.dataset.date;
+            const fp = btn.closest(".city-entry").querySelector(".datePicking")._flatpickr;
+            const updatedDates = fp.selectedDates.filter(d => formatLocalDate(d) !== date);
+            fp.setDate(updatedDates);
+            updateDatePreview(preview, updatedDates);
+            btn.closest(".city-entry").querySelector(".error-msg").classList.toggle("d-none", updatedDates.length > 0);
+            updateAddPricingButtonState(btn.closest(".city-entry"));
+          });
+        });
+      }
+
+      cityContainer.addEventListener("change", function(event) {
+        if (event.target.classList.contains("city-select")) {
+          const select = event.target;
+          const cityName = select.value;
+          const entry = select.closest(".city-entry");
+          const stateField = entry.querySelector(".state-field");
+          const imageField = entry.querySelector(".city-image");
+          const isDuplicate = Array.from(document.querySelectorAll(".city-select")).some(s => s !== select && s.value === cityName);
+
+          if (isDuplicate) {
+            alert("This city is already selected!");
+            select.value = "";
+            stateField.value = "";
+            imageField.src = "";
+            imageField.style.display = "none";
+            selectedCities.delete(cityName);
+          } else if (cityName) {
+            const selectedOption = select.options[select.selectedIndex];
+            stateField.value = selectedOption.dataset.state;
+            imageField.src = selectedOption.dataset.image;
+            imageField.style.display = "block";
+            selectedCities.add(cityName);
+          } else {
+            stateField.value = "";
+            imageField.src = "";
+            imageField.style.display = "none";
+            selectedCities.delete(cityName);
+          }
+          updateAddCityButtonState();
+          updateAddPricingButtonState(entry);
+        }
+      });
+
+      document.getElementById("addCity").addEventListener("click", () => {
+        if (!addCityBtn.disabled) addCityEntry();
+      });
+
+      initializeCityEntries();
+    });
+
+    // end of manage departure city
+
+    // Quill Editors
+    editorIds.forEach(id => {
+      staticEditors[id] = new Quill(`#${id}`, {
+        theme: "snow",
+        modules: {
+          toolbar: [
+            [{
+              'header': [1, 2, 3, 4, 5, 6, false]
+            }],
+            [{
+              'font': []
+            }],
+            [{
+              'size': ['small', false, 'large', 'huge']
+            }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{
+              'script': 'sub'
+            }, {
+              'script': 'super'
+            }],
+            [{
+              'list': 'ordered'
+            }, {
+              'list': 'bullet'
+            }],
+            [{
+              'indent': '-1'
+            }, {
+              'indent': '+1'
+            }],
+            [{
+              'align': []
+            }],
+            [{
+              'color': []
+            }, {
+              'background': []
+            }],
+            ['blockquote', 'link'],
+            ['clean']
+          ]
+        }
+      });
+    });
+
+    // Itinerary Management
+    const itineraryData = <%- JSON.stringify(trips?.itinerary || []) %>;
+    const addDayBtn = document.getElementById("add-day");
+    const itineraryContainer = document.getElementById("itinerary-container");
+
+    // Separate editors object for itinerary to avoid conflicts
+    let itineraryEditors = {};
+
+    function getNextDayNumber() {
+      const existingDays = Array.from(itineraryContainer.querySelectorAll(".itinerary-day"))
+        .map(day => parseInt(day.dataset.day));
+      return existingDays.length === 0 ? 1 : Math.max(...existingDays) + 1;
+    }
+
+    function createItineraryDay(dayNumber, headerValue = "", descriptionValue = "", dayLabel = `Day ${dayNumber}`) {
+      const editorId = `editor-${dayNumber}`; // Unique editor ID based on dayNumber
+      const accordionId = `collapse-${dayNumber}`;
+      const itineraryHtml = `
+    <div class="accordion-item itinerary-day" data-day="${dayNumber}">
+      <h2 class="accordion-header" id="heading-${dayNumber}" data-bs-theme="dark">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#${accordionId}" aria-expanded="true" aria-controls="${accordionId}">
+          ${dayLabel}
+        </button>
+      </h2>
+      <div id="${accordionId}" class="accordion-collapse collapse show" aria-labelledby="heading-${dayNumber}" data-bs-parent="#itinerary-container">
+        <div class="accordion-body">
+          <div class="mb-3">
+            <label class="form-label">Header</label>
+            <input type="text" class="form-control itinerary-header" name="itinerary-header[]" value="${headerValue}" placeholder="Enter Header" />
+            <div class="invalid-feedback">Header is required.</div>
+          </div>
+          <div class="editor-container mb-3" id="${editorId}"></div>
+          <input type="hidden" name="content[]" class="quill-content" value="${descriptionValue.replace(/"/g, '&quot;').replace(/>/g, '&gt;').replace(/</g, '&lt;')}">
+          <button type="button" class="btn btn-danger btn-sm remove-day-btn mt-2" disabled><i class="bi bi-trash"></i> Remove This Day</button>
+        </div>
+      </div>
+    </div>`;
+
+      itineraryContainer.insertAdjacentHTML("beforeend", itineraryHtml);
+      const editorContainer = document.getElementById(editorId);
+      if (editorContainer) {
+        console.log(`Editor container #${editorId} added to DOM`);
+        initializeEditor(editorId, descriptionValue);
+        const dayElement = document.querySelector(`.itinerary-day[data-day="${dayNumber}"]`);
+        if (dayElement) {
+          addEventListenersToDay(dayElement);
+        } else {
+          console.error(`Day element for day ${dayNumber} not found`);
+        }
+        updateDayLabelsAndButtons();
+      } else {
+        console.error(`Failed to find editor container #${editorId} after insertion`);
+      }
+    }
+
+    function initializeEditor(editorId, content = "") {
+      const editorContainer = document.getElementById(editorId);
+      if (!editorContainer) {
+        console.error(`Editor container #${editorId} not found for initialization`);
+        return;
+      }
+
+      if (itineraryEditors[editorId]) {
+        console.warn(`Editor ${editorId} already initialized, skipping`);
+        return;
+      }
+
+      try {
+        itineraryEditors[editorId] = new Quill(`#${editorId}`, {
+          theme: "snow",
+          modules: {
+            toolbar: [
+              [{
+                'header': [1, 2, 3, 4, 5, 6, false]
+              }],
+              [{
+                'font': []
+              }],
+              [{
+                'size': ['small', false, 'large', 'huge']
+              }],
+              ['bold', 'italic', 'underline', 'strike'],
+              [{
+                'script': 'sub'
+              }, {
+                'script': 'super'
+              }],
+              [{
+                'list': 'ordered'
+              }, {
+                'list': 'bullet'
+              }],
+              [{
+                'indent': '-1'
+              }, {
+                'indent': '+1'
+              }],
+              [{
+                'align': []
+              }],
+              [{
+                'color': []
+              }, {
+                'background': []
+              }],
+              ['blockquote', 'link', 'image'],
+              ['clean']
+            ]
+          }
+        });
+        console.log(`Editor ${editorId} initialized successfully`);
+
+        itineraryEditors[editorId].root.innerHTML = content || "";
+        const hiddenInput = editorContainer.nextElementSibling;
+        if (hiddenInput && hiddenInput.classList.contains('quill-content')) {
+          hiddenInput.value = content || "";
+        } else {
+          console.error(`Hidden input for ${editorId} not found or invalid`);
+        }
+
+        itineraryEditors[editorId].on("text-change", () => {
+          hiddenInput.value = itineraryEditors[editorId].root.innerHTML;
+          updateAddDayButtonState();
+        });
+
+        itineraryEditors[editorId].getModule('toolbar').addHandler('image', () => {
+          const input = document.createElement('input');
+          input.setAttribute('type', 'file');
+          input.setAttribute('accept', 'image/*');
+          input.click();
+          input.onchange = async () => {
+            const file = input.files[0];
+            if (!file) return;
+            const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+            if (!allowedTypes.includes(file.type)) {
+              alert('Only JPG, JPEG, and PNG images are allowed.');
+              return;
+            }
+            if (file.size > 2 * 1024 * 1024) {
+              alert('File size should not exceed 2MB.');
+              return;
+            }
+            const formData = new FormData();
+            formData.append('_csrf', csrfToken);
+            const timestamp = new Date().toISOString().replace(/:/g, '-');
+            const fileName = `${timestamp}-${file.name}`;
+            file.originalname = fileName;
+            formData.append('image', file);
+            try {
+              const response = await fetch('/uploadImage', {
+                method: 'POST',
+                headers: {
+                  'X-CSRF-Token': csrfToken
+                },
+                body: formData
+              });
+              const result = await response.json();
+              if (response.ok && result.success) {
+                const range = itineraryEditors[editorId].getSelection() || {
+                  index: 0
+                };
+                itineraryEditors[editorId].insertEmbed(range.index, 'image', result.imageUrl);
+              } else {
+                alert(result.message || 'Failed to upload image.');
+              }
+            } catch (error) {
+              console.error('Upload Error:', error);
+              alert('Something went wrong while uploading the image.');
+            }
+          };
+        });
+
+        // Ensure the button state is updated after initialization
+        setTimeout(() => updateAddDayButtonState(), 0);
+      } catch (error) {
+        console.error(`Error initializing Quill editor ${editorId}:`, error);
+      }
+    }
+
+    function addEventListenersToDay(dayElement) {
+      const removeBtn = dayElement.querySelector(".remove-day-btn");
+      removeBtn.addEventListener("click", () => {
+        const dayNumber = dayElement.dataset.day;
+        dayElement.remove();
+        const editorId = `editor-${dayNumber}`;
+        delete itineraryEditors[`editor-${dayNumber}`];
+        updateDayLabelsAndButtons();
+        updateAddDayButtonState(editorId);
+      });
+
+      const headerInput = dayElement.querySelector(".itinerary-header");
+      headerInput.addEventListener("input", () => {
+        headerInput.classList.toggle("is-invalid", !headerInput.value.trim());
+        updateAddDayButtonState();
+      });
+    }
+
+    /**
+     * Updates the day labels and editor IDs to be sequential (Day 1, Day 2, etc.).
+     * Ensures that editor IDs in the DOM and itineraryEditors object match the new day numbers.
+     */
+    function updateDayLabelsAndButtons() {
+      const days = Array.from(itineraryContainer.querySelectorAll(".itinerary-day"));
+
+      // Update day labels and editor IDs to be sequential
+      days.forEach((day, index) => {
+        const logicalDayNumber = index + 1; // New day number (e.g., Day 3 → Day 2)
+        const oldDayNumber = parseInt(day.dataset.day); // Old day number (e.g., 3)
+
+        // If the day number has changed, update the DOM and editor IDs
+        if (logicalDayNumber !== oldDayNumber) {
+          // Update the data-day attribute for logical ordering
+          day.dataset.day = logicalDayNumber;
+
+          // Update accordion header and collapse IDs
+          const header = day.querySelector(".accordion-header");
+          header.id = `heading-${logicalDayNumber}`;
+          const button = header.querySelector(".accordion-button");
+          button.setAttribute("data-bs-target", `#collapse-${logicalDayNumber}`);
+          button.setAttribute("aria-controls", `collapse-${logicalDayNumber}`);
+          button.textContent = `Day ${logicalDayNumber}`;
+
+          const collapse = day.querySelector(".accordion-collapse");
+          collapse.id = `collapse-${logicalDayNumber}`;
+          collapse.setAttribute("aria-labelledby", `heading-${logicalDayNumber}`);
+
+          // Update editor ID in itineraryEditors and DOM
+          const oldEditorId = `editor-${oldDayNumber}`;
+          const newEditorId = `editor-${logicalDayNumber}`;
+          if (itineraryEditors[oldEditorId]) {
+            // Transfer the editor instance to the new ID
+            itineraryEditors[newEditorId] = itineraryEditors[oldEditorId];
+            delete itineraryEditors[oldEditorId];
+
+            // Update the editor container ID in the DOM
+            const editorContainer = day.querySelector(".editor-container");
+            editorContainer.id = newEditorId;
+          }
+        } else {
+          // If the day number hasn't changed, just update the label
+          const headerBtn = day.querySelector(".accordion-button");
+          headerBtn.textContent = `Day ${logicalDayNumber}`;
+        }
+      });
+
+      // Update remove buttons: disable if only one day remains
+      const removeButtons = itineraryContainer.querySelectorAll(".remove-day-btn");
+      removeButtons.forEach(btn => {
+        btn.disabled = days.length === 1;
+      });
+    }
+
+    /**
+     * Updates the enable/disable state of the "Add Day" button based on the validity of existing days.
+     * A day is valid if its header and editor content are non-empty.
+     * @param {string|null} removedEditorId - The ID of the editor that was just removed (if any).
+     */
+    function updateAddDayButtonState(removedEditorId = null) {
+      const days = itineraryContainer.querySelectorAll(".itinerary-day");
+      let allValid = true;
+
+      // If there are no days, the button should be disabled
+      if (days.length === 0) {
+        console.log("No days present, disabling Add Day button");
+        addDayBtn.disabled = true;
+        return;
+      }
+
+      // Validate each day's header and editor content
+      days.forEach(day => {
+        const header = day.querySelector(".itinerary-header").value.trim();
+        const editorId = `editor-${day.dataset.day}`;
+
+        // Check if the editor exists before accessing its content
+        if (!itineraryEditors[editorId]) {
+          console.warn(`Editor ${editorId} not found for Day ${day.dataset.day}, treating as invalid`);
+          allValid = false;
+          return;
+        }
+
+        // Use innerHTML to check editor content, excluding empty paragraphs
+        const editorContent = itineraryEditors[editorId]?.root.innerHTML || "";
+        const contentIsEmpty = !editorContent || editorContent === "<p><br></p>";
+
+        // A day is invalid if its header or editor content is empty
+        if (!header || contentIsEmpty) {
+          allValid = false;
+          console.log(`Validation failed for Day ${day.dataset.day}: Header=${header}, Content=${editorContent}`);
+        }
+
+        // Toggle invalid state for the header input
+        day.querySelector(".itinerary-header").classList.toggle("is-invalid", !header);
+      });
+
+      // Log the validation result for debugging
+      console.log({
+        removedEditorId,
+        allValid
+      });
+
+      // Enable the "Add Day" button if all days are valid
+      addDayBtn.disabled = !allValid;
+      console.log(`Add Day button state: ${addDayBtn.disabled ? 'disabled' : 'enabled'}`);
+    }
+
+    function loadItinerary() {
+      itineraryContainer.innerHTML = ""; // Clear existing content
+
+      if (itineraryData.length > 0) {
+        itineraryData.forEach((item, index) => {
+          const dayNumber = index + 1;
+          createItineraryDay(dayNumber, item.header, item.description, `Day ${index + 1}`);
+        });
+      } else {
+        createItineraryDay(1);
+      }
+      updateDayLabelsAndButtons();
+      updateAddDayButtonState();
+    }
+
+    addDayBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      if (!addDayBtn.disabled) {
+        const newDayNumber = getNextDayNumber();
+        console.log(`Adding new day: Day ${newDayNumber}`);
+        createItineraryDay(newDayNumber);
+      }
+    });
+
+    // Initial load
+    loadItinerary();
+    // End of the itineray managment
+
+    // Form Submission with Validation
+    document.getElementById("addUpdateTripDetial").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      // Step 1: Validate all required fields
+      const requiredFields = [{
+          id: "name",
+          name: "Trip Name"
+        },
+        {
+          id: "state",
+          name: "State"
+        },
+      ];
+
+      let validationErrors = [];
+
+      // Validate simple input fields
+      requiredFields.forEach(field => {
+        const input = document.getElementById(field.id);
+        const value = input.value.trim();
+        if (!value) {
+          validationErrors.push(`${field.name} is required.`);
+          input.classList.add("is-invalid");
+        } else {
+          input.classList.remove("is-invalid");
+        }
+      });
+
+      // Validate image (required for new trips)
+      const tripId = document.getElementById("tripId").value;
+      const imageInput = document.getElementById("file");
+      const existingImage = document.querySelector('input[name="existingImage"]').value;
+      if (!tripId && !imageInput.files.length && !existingImage) {
+        validationErrors.push("An image is required for new trips.");
+        imageInput.classList.add("is-invalid");
+      } else {
+        imageInput.classList.remove("is-invalid");
+      }
+
+      // Validate PDF (optional, but if provided, ensure it's valid)
+      const documentInput = document.getElementById("document");
+      const existingDocument = document.querySelector('input[name="existingDocument"]').value;
+      if (documentInput.files.length > 0) {
+        const file = documentInput.files[0];
+        const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+        if (file.type !== "application/pdf") {
+          validationErrors.push("Document must be a PDF file.");
+          documentInput.classList.add("is-invalid");
+        } else if (file.size > MAX_FILE_SIZE) {
+          validationErrors.push("Document size exceeds 5MB.");
+          documentInput.classList.add("is-invalid");
+        } else {
+          documentInput.classList.remove("is-invalid");
+        }
+      }
+
+      // Validate that only one PDF is uploaded
+      let pdfCount = 0;
+      const allFiles = Array.from(imageInput.files).concat(Array.from(documentInput.files));
+      allFiles.forEach((file) => {
+        if (file.type === "application/pdf") pdfCount++;
+      });
+      if (pdfCount > 1) {
+        validationErrors.push("Only one PDF document is allowed.");
+        documentInput.classList.add("is-invalid");
+      }
+
+      // Validate editor fields
+      const editorFields = [{
+          id: "about-editor",
+          name: "About Information",
+          errorId: "aboutError"
+        },
+        {
+          id: "activities-editor",
+          name: "Activities & Attraction",
+          errorId: "activitiesError"
+        },
+        {
+          id: "things_to_carry-editor",
+          name: "Things to Carry",
+          errorId: "thingsToCarryError"
+        },
+        {
+          id: "includenexclude-editor",
+          name: "Include & Exclude",
+          errorId: "includeExcludeError"
+        },
+        {
+          id: "package_cost-editor",
+          name: "Package Cost",
+          errorId: "packageCostError"
+        },
+        {
+          id: "infonfaq-editor",
+          name: "Info & FAQs",
+          errorId: "infoFaqError"
+        },
+        {
+          id: "bookncancel-editor",
+          name: "Booking & Cancellation",
+          errorId: "bookCancelError"
+        },
+        {
+          id: "guidelines-editor",
+          name: "Travel Guidelines",
+          errorId: "guidelinesError"
+        }
+      ];
+
+      editorFields.forEach(field => {
+        const content = staticEditors[field.id].root.innerHTML.trim();
+        const isEmpty = !content || content === "<p><br></p>";
+      });
+
+      // Validate itinerary
+      const itineraryDays = Array.from(document.querySelectorAll(".itinerary-day"));
+      const itineraryData = itineraryDays.map(day => {
+        const header = day.querySelector('input[name="itinerary-header[]"]').value.trim();
+        const editorId = `editor-${day.dataset.day}`;
+        const description = itineraryEditors[editorId]?.root.innerHTML || "";
+        const contentIsEmpty = !description || description === "<p><br></p>";
+
+        if (!header) {
+          // validationErrors.push(`Itinerary Day ${day.dataset.day}: Header is required.`);
+          // day.querySelector(".itinerary-header").classList.add("is-invalid");
+        }
+        if (contentIsEmpty) {
+          // validationErrors.push(`Itinerary Day ${day.dataset.day}: Description is required.`);
+        }
+
+        return {
+          day: `Day ${day.dataset.day}`,
+          header,
+          description
+        };
+      });
+
+      // Validate deptcities
+      const deptCitiesData = Array.from(document.querySelectorAll(".city-entry")).map(entry => {
+        const citySelect = entry.querySelector(".city-select");
+        const city = citySelect.value;
+        const state = entry.querySelector(".state-field").value;
+        const pricingRows = entry.querySelectorAll(".pricingRow");
+        const dates = entry.querySelector(".datePicking")._flatpickr?.selectedDates || []; // Keep as Date objects
+        const tripDuration = entry.querySelector(".tripDuration").value.trim();
+        // Add new fields
+        const availableSlots = entry.querySelector(".availableSlots").value.trim();
+        const partialPayment = entry.querySelector(".partialPayment").value.trim();
+        const bookingCutoffDays = entry.querySelector(".bookingCutoffDays").value.trim();
+
+        // Validate new fields
+        if (availableSlots && (isNaN(availableSlots) || parseFloat(availableSlots) < 0)) {
+          validationErrors.push(`Departure City ${city}: Available slots must be a non-negative number.`);
+          entry.querySelector(".availableSlots").classList.add("is-invalid");
+        }
+        if (partialPayment && (isNaN(partialPayment) || parseFloat(partialPayment) < 0)) {
+          validationErrors.push(`Departure City ${city}: Partial payment must be a non-negative number.`);
+          entry.querySelector(".partialPayment").classList.add("is-invalid");
+        }
+        if (bookingCutoffDays && (isNaN(bookingCutoffDays) || parseFloat(bookingCutoffDays) < 0)) {
+          validationErrors.push(`Departure City ${city}: Booking cutoff days must be a non-negative number.`);
+          entry.querySelector(".bookingCutoffDays").classList.add("is-invalid");
+        }
+
+        // Validate pricing
+        const price = Array.from(pricingRows).map(row => {
+          const transferType = row.querySelector(".transferType");
+          const childPrice = row.querySelector(".childPrice");
+          const adultPrice = row.querySelector(".adultPrice");
+          const transferTypeValue = transferType.value.trim();
+          const childPriceValue = childPrice.value.trim();
+          const adultPriceValue = adultPrice.value.trim();
+
+
+          return {
+            transferType: transferTypeValue,
+            childPrice: parseFloat(childPriceValue) || 0,
+            adultPrice: parseFloat(adultPriceValue) || 0
+          };
+        });
+
+        return {
+          City: city,
+          State: state,
+          tripDuration,
+          dates: formatDatesForMongoDB(dates), // Pass Date objects directly
+          price,
+          // Add new fields
+          availableSlots: availableSlots || "0", // Default to "0" if empty
+          partialPayment: partialPayment || "0", // Default to "0" if empty
+          bookingCutoffDays: bookingCutoffDays || "0" // Default to "0" if empty
+
+        };
+      });
+
+      // Derive trip_dates from deptcities dates (if this is the intended behavior)
+      const allDates = deptCitiesData?.flatMap(city => city?.dates?.map?.(date => ({
+        Year: date.Year || "",
+        Month: date.Month || "",
+        dates: date.dates || ""
+      })));
+      const uniqueTripDates = Array.from(new Map(allDates.map(item => [`${item.Year}-${item.Month}-${item.dates}`, item])).values());
+
+      // Step 2: Display validation errors if any
+      if (validationErrors.length > 0) {
+        alert("Please fix the following errors:\n- " + validationErrors.join("\n- "));
+        return;
+      }
+
+      // Step 3: Prepare form data for submission
+      const formData = new FormData(this);
+
+      // Append editor content
+      editorFields.forEach(field => {
+        const fieldName = field.id.replace("-editor", "");
+        formData.set(fieldName, staticEditors[field.id].root.innerHTML);
+      });
+
+      // Append itinerary data
+      formData.set("itinerary", JSON.stringify(itineraryData));
+
+      // Append deptcities data
+      formData.set("deptcities", JSON.stringify(deptCitiesData));
+
+      // Append trip_dates
+      formData.set("trip_dates", JSON.stringify(uniqueTripDates));
+
+      // Step 4: Submit the form
+      // Submit with fetch
+      fetch("/admin/postNewAddTours", {
+          method: "POST",
+          body: formData
+        })
+        .then(response => {
+          const status = response.status;
+          return response.json().then(data => ({
+            status,
+            data
+          }));
+        })
+        .then(({
+          status,
+          data
+        }) => {
+          handleResponse(data, status);
+        })
+        .catch(err => {
+          console.error("Submission error:", err);
+          handleResponse({
+            message: "An error occurred while submitting the form. Please try again."
+          }, 500);
+        });
+    });
+
+    // Save as Draft Button Handler
+    document.getElementById("saveDraftBtn").addEventListener("click", function(e) {
+      e.preventDefault();
+
+      const form = document.getElementById("addUpdateTripDetial");
+      const formData = new FormData(form);
+
+      // Ensure isActive is false for drafts
+      formData.set("isActive", "false");
+
+      // Append editor content
+      const editorFields = [{
+          id: "about-editor",
+          name: "about"
+        },
+        {
+          id: "activities-editor",
+          name: "activities"
+        },
+        {
+          id: "things_to_carry-editor",
+          name: "things_to_carry"
+        },
+        {
+          id: "includenexclude-editor",
+          name: "includenexclude"
+        },
+        {
+          id: "package_cost-editor",
+          name: "package_cost"
+        },
+        {
+          id: "infonfaq-editor",
+          name: "infonfaq"
+        },
+        {
+          id: "bookncancel-editor",
+          name: "bookncancel"
+        },
+        {
+          id: "guidelines-editor",
+          name: "guidelines"
+        }
+      ];
+
+      editorFields.forEach(field => {
+        formData.set(field.name, staticEditors[field.id].root.innerHTML);
+      });
+
+      // Append itinerary data
+      const itineraryDays = Array.from(document.querySelectorAll(".itinerary-day"));
+      const itineraryData = itineraryDays.map(day => {
+        const header = day.querySelector('input[name="itinerary-header[]"]').value.trim();
+        const editorId = `editor-${day.dataset.day}`;
+        const description = itineraryEditors[editorId]?.root.innerHTML || "";
+        return {
+          day: `Day ${day.dataset.day}`,
+          header,
+          description
+        };
+      });
+      formData.set("itinerary", JSON.stringify(itineraryData));
+
+      // Append deptcities data
+      const deptCitiesData = Array.from(document.querySelectorAll(".city-entry")).map(entry => {
+        const citySelect = entry.querySelector(".city-select");
+        const city = citySelect.value;
+        const state = entry.querySelector(".state-field").value;
+        const pricingRows = entry.querySelectorAll(".pricingRow");
+        const dates = entry.querySelector(".datePicking")._flatpickr?.selectedDates || [];
+        const tripDuration = entry.querySelector(".tripDuration").value.trim();
+        const availableSlots = entry.querySelector(".availableSlots").value.trim();
+        const partialPayment = entry.querySelector(".partialPayment").value.trim();
+        const bookingCutoffDays = entry.querySelector(".bookingCutoffDays").value.trim();
+
+        const price = Array.from(pricingRows).map(row => {
+          const transferType = row.querySelector(".transferType");
+          const childPrice = row.querySelector(".childPrice");
+          const adultPrice = row.querySelector(".adultPrice");
+          const transferTypeValue = transferType.value.trim();
+          const childPriceValue = childPrice.value.trim();
+          const adultPriceValue = adultPrice.value.trim();
+
+          return {
+            transferType: transferTypeValue,
+            childPrice: parseFloat(childPriceValue) || 0,
+            adultPrice: parseFloat(adultPriceValue) || 0
+          };
+        });
+
+        return {
+          City: city,
+          State: state,
+          tripDuration,
+          dates: formatDatesForMongoDB(dates),
+          price,
+          availableSlots: availableSlots || "0",
+          partialPayment: partialPayment || "0",
+          bookingCutoffDays: bookingCutoffDays || "0"
+        };
+      });
+      formData.set("deptcities", JSON.stringify(deptCitiesData));
+
+      // Append trip_dates
+      const allDates = deptCitiesData?.flatMap(city => city?.dates?.map?.(date => ({
+        Year: date.Year || "",
+        Month: date.Month || "",
+        dates: date.dates || ""
+      })));
+      const uniqueTripDates = Array.from(new Map(allDates.map(item => [`${item.Year}-${item.Month}-${item.dates}`, item])).values());
+      formData.set("trip_dates", JSON.stringify(uniqueTripDates));
+
+      // Submit the form as draft
+      fetch("/admin/postNewAddTours", {
+          method: "POST",
+          body: formData
+        })
+        .then(response => {
+          const status = response.status;
+          return response.json().then(data => ({
+            status,
+            data
+          }));
+        })
+        .then(({
+          status,
+          data
+        }) => {
+          handleResponse(data, status);
+        })
+        .catch(err => {
+          console.error("Draft submission error:", err);
+          handleResponse({
+            message: "An error occurred while saving the draft. Please try again."
+          }, 500);
+        });
+    });
+  </script>
+</body>
+
+</html>

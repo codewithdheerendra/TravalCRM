@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../partials/headtag', {isNiceSelect: true}); %>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+  <!-- Razorpay SDK -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+  <style>
+    body {background-color: #F9FAFB;}a.backBtn {text-decoration: none;color: #002d66;}.card {--bs-card-border-radius: 12px;}.summary_section_booking{position: sticky;top: 80px;}.cm_margin_booking + p {color: #4B5563;}label {font-weight: 500;color: #4B5563;}.countRow .btn {--bs-btn-font-weight: bold;--bs-btn-padding-y: 0.3rem;--bs-btn-padding-x: 0.8rem;}.countRow .form-control{width: 100%;}.payment-options{background-color: #E5E7EB;}.payment-options .btn {--bs-btn-color: #111827;}.payment-options .fullPayBtn {--bs-btn-bg: transparent;--bs-btn-color: #4B5563;--bs-btn-active-bg: #fff;--bs-btn-active-color: #4B5563;--bs-btn-hover-bg: #e0e0e0;--bs-btn-hover-color: #fff;--bs-btn-border-color: transparent;--bs-btn-disabled-border-color: transparent}.payment-btn {--bs-btn-font-weight: bold;}.cursor_not_allowed_booking {cursor: not-allowed;}
+    #messageModal .modal-content, #paymentModal .modal-content, #travelerInfoModal .modal-content {border-radius: 10px;}#messageModal .modal-header, #paymentModal .modal-header, #travelerInfoModal .modal-header {background: #1a4b8e;color: white;}.traveler-info-modal-label {display: block;margin-bottom: 0.3rem;font-weight: 600;}.traveler-info-modal-field {width: 100%;padding: 0.5rem;border: 1px solid #ccc;border-radius: 6px;margin-bottom: 0.4rem;}.error-message {display: none;color: red;font-size: 0.8rem;}
+    .payment-options .btn.active { background-color: #fff; color: #002d66; font-weight: bold; border: 1px solid #002d66; }
+    #costBreakdownModal {--bs-modal-width: 800px;}
+  </style>
+</head>
+
+<body>
+  <%- include('../partials/header', {isSearch: false}); %>
+  <div class="container pt-3">
+    <a href="javascript:history.back()" class="text-decoration-none backBtn">
+      <i class="bi bi-arrow-left"></i> Back
+    </a><br>
+    <h1 class="visually-hidden">Booking initiated</h1>
+    <h2 class="cm_margin_booking pt-2">Booking initiated</h2>
+    <p>Please enter your details below and proceed to payment. Leave the rest to us.</p>
+
+    <form action="/payment/order" method="POST" id="bookingForm" class="row gy-3">
+      <div class="col-12">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <input type="hidden" name="tourId" value="<%= tourDetails._id %>" />
+        <input type="hidden" name="Adultprice" id="Adultprice" />
+        <input type="hidden" name="childprice" id="childprice" />
+        <input type="hidden" name="email" id="userEmail" value="<%= userData?.email || '' %>" />
+        <input type="hidden" name="firstName" id="firstName" value="<%= userData?.firstName || '' %>" />
+        <input type="hidden" name="phone" id="phone" value="<%= userData?.phone || '' %>" />
+        <input type="hidden" name="userId" id="userId" value="<%= userData?.id || '' %>" />
+      </div>
+      <aside class="col-lg-6 col-xl-7">
+        <div class="form_section_booking card border-light shadow-sm p-3">
+          <div class="row gy-3">
+            <div class="col-12">
+              <label for="transportType">Transport Type</label>
+              <select class="form-select" name="transportType" id="transportType" onchange="populateForm()">
+                <option value="" disabled selected><strong>Select Transport Type</strong></option>
+                <% tourDetails?.transportList?.forEach(loc=> { %>
+                <option value="<%= loc.transferType %>">
+                  <%= loc.transferType %>
+                </option>
+                <% }); %>
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label for="joiningFrom">Joining from</label>
+              <select class="form-select cursor_not_allowed_booking" name="joiningFrom" id="joiningFrom" onchange="populateDates()" disabled>
+                <% tourDetails.deptcities.forEach(loc=> { %>
+                <option value="<%= loc.City %>" <%= tourDetails.selectedInfo.city == loc.City ? 'selected' : '' %>>
+                  <%= loc.City || loc.State %>
+                </option>
+                <% }); %>
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label for="travelDate">Tour date <span class="text-danger">*</span></label>
+              <select class="enable-disable form-select" name="travelDate" id="travelDate" onchange="onchangetoureDate()">
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label for="adults" class="me-3">Adults (10+): </label>
+              <div class="d-inline-flex gap-2 align-items-center countRow">
+                <button class="btn btn-app-primary enable-disable" type="button" onclick="increDecreValue('adults','decrement')">-</button>
+                <input id="adults" name="adults" class="form-control enable-disable" type="number" value="1" readonly />
+                <button class="btn btn-app-primary enable-disable" type="button" onclick="increDecreValue('adults','increment')">+</button>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <label for="children" class="me-3">Children (5-10):</label>
+              <div class="d-inline-flex gap-2 align-items-center countRow">
+                <button class="btn btn-app-primary enable-disable" type="button" onclick="increDecreValue('children','decrement')">-</button>
+                <input id="children" name="children" class="form-control enable-disable" type="number" value="0" readonly />
+                <button class="btn btn-app-primary enable-disable" type="button" onclick="increDecreValue('children','increment')">+</button>
+              </div>
+            </div>
+          </div>
+          <hr>
+          <h3 class="h5">Person's details</h3>
+          <div class="pb-4" id="personDetailsContainer">
+            <div class="person-details row gy-3" id="person1">
+              <p class="h6 col-12">Person 1</p>
+              <div class="col-sm-6">
+                <label for="firstName_0">First name <span class="text-danger">*</span></label>
+                <input id="firstName_0" name="personDetails[0][firstName]" class="form-control enable-disable" type="text" placeholder="Your name here" required value="<%= userData?.firstName || '' %>" />
+              </div>
+              <div class="col-sm-6">
+                <label for="Surname_0">Last name <span class="text-danger">*</span></label>
+                <input id="Surname_0" name="personDetails[0][Surname]" class="form-control enable-disable" type="text" placeholder="Please enter last name" required value="<%= userData?.lastName || '' %>" />
+              </div>
+              <div class="col-sm-6">
+                <label for="dateofbirth_0">Birth date <span class="text-danger">*</span></label>
+                <input id="dateofbirth_0" name="personDetails[0][dateofbirth]" class="enable-disable dateofbirthInput form-control" required type="date" value="<%= userData?.birthDate ? new Date(userData.birthDate).toISOString().split('T')[0] : '' %>" onchange="updatePersonCounts()" />
+              </div>
+              <div class="col-sm-6">
+                <label for="Gender_0">Gender <span class="text-danger">*</span></label>
+                <select id="Gender_0" name="personDetails[0][Gender]" class="enable-disable form-select" required>
+                  <option value="" disabled <%= !userData?.gender ? 'selected' : '' %>>Select Gender</option>
+                  <option value="Male" <%= userData?.gender === 'Male' ? 'selected' : '' %>>Male</option>
+                  <option value="Female" <%= userData?.gender === 'Female' ? 'selected' : '' %>>Female</option>
+                  <option value="Other" <%= userData?.gender === 'Other' ? 'selected' : '' %>>Other</option>
+                </select>
+              </div>
+              <div class="col-sm-6">
+                <label for="mobileno_0">Mobile number <span class="text-danger">*</span></label>
+                <input id="mobileno_0" name="personDetails[0][mobileno]" class="form-control enable-disable" type="tel" required placeholder="+91 Enter your mobile number" value="<%= userData?.phone || '' %>" />
+              </div>
+              <div class="col-sm-6">
+                <label for="alternateNumber_0">Alternative number</label>
+                <input id="alternateNumber_0" name="personDetails[0][alternateNumber]" class="form-control enable-disable" type="tel" placeholder="+91 Enter alt mobile number" value="<%= userData?.alternateNumber || '' %>" />
+              </div>
+            </div>
+          </div>
+          <button id="AddPerson" type="button" class="btn btn-app-primary w-100 enable-disable" onclick="addPerson()"><i class="bi bi-plus"></i> Add all person's detail</button>
+          <p class="cm_label_booking mt-3">Additional services (optional)</p>
+        </div>
+      </aside>
+      <aside class="col-lg-6 col-xl-5">
+        <div class="summary_section_booking card border-light shadow-sm p-3">
+          <h3 class="h5 pb-3 border-bottom">Booking summary</h3>
+          <p class="pt-2">
+            <strong><%= tourDetails.name %></strong><br>
+            <%= tourDetails?.deptcities[0]?.tripDuration || tourDetails?.days || '' %>
+          </p>
+          <p class="d-flex justify-content-between gap-3 flex-wrap mb-0 border-bottom pb-3">
+            <span>
+              Pickup from:<br>
+              <span class="value fw-medium" id="pickupFrom"></span>
+            </span>
+            <span>
+              Travel date:<br>
+              <span class="value fw-medium" id="travelDateDisplay"></span>
+            </span>
+          </p>
+          <p class="d-flex justify-content-between align-items-center gap-3 pt-3">
+            <strong>Total costs (including 5% GST)<span title="Includes 5% GST">ℹ️</span></strong>
+            <strong>₹ <span id="totalCost">0</span></strong>
+
+          </p>
+          <p class="text-end mb-0">
+            <a href="#" id="openCostModalBtn" data-bs-toggle="modal" data-bs-target="#costBreakdownModal">View Cost Breakdown</a>
+          </p>
+          <p class="small bg-warning bg-opacity-25 px-3 py-2 rounded mt-3">3AC train ticket and flight ticket charges will be applied after the actual ticket booking.</p>
+          <div class="payment-options d-flex flex-wrap gap-2 align-items-center rounded p-1 mb-2">
+            <button id="fullPayBtn" type="button" class="flex-grow-1 btn fullPayBtn active" data-payment-type="full">Pay full payment</button>
+            <button id="partPayBtn" type="button" class="flex-grow-1 btn btn-light" data-payment-type="partial" disabled>Pay part payment</button>
+            <input type="hidden" name="paymentType" id="paymentType" value="full" />
+          </div>
+          <label for="payingAmount" class="form-label">Amount to pay now (including 5% GST)</label>
+          <input id="payingAmount" name="payingAmount" class="form-control" type="text" readonly />
+          <p class="small text-muted mt-1">The amount includes 5% GST only on full payment.</p>
+          <button id="submit" class="btn btn-app-primary w-100 btn-lg payment-btn enable-disable">Pay ₹<span id="payingAmountDisplay"></span> now</button>
+        </div>
+      </aside>
+    </form>
+  </div>
+  <!-- Cost Breakdown Modal -->
+  <div class="modal fade" id="costBreakdownModal" tabindex="-1" aria-labelledby="costBreakdownModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen-md-down modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="costBreakdownModalLabel">Cost Breakdown</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h6 class="fw-bold"><%= tourDetails.name %></h6>
+          <p class="mb-2 text-muted"><%= tourDetails?.deptcities[0]?.tripDuration || tourDetails.days %></p>
+          <div class="row mb-3">
+            <div class="col-md-6"><strong>Pickup from:</strong> <span id="ModelpickupFrom"></span></div>
+            <div class="col-md-6"><strong>Travel date:</strong> <span id="ModeltravelDate"></span></div>
+          </div>
+          <h4 class="fw-bold mb-3">Total cost</h4>
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Price</th>
+                  <th>Final Amount</th>
+                </tr>
+              </thead>
+  
+              <tbody id="costTableBody"></tbody>
+            </table>
+          </div>
+          <p class="d-flex justify-content-between pt-2 mb-2">
+            <strong>Subtotal</strong>
+            <span id="MSubtotal">₹0</span>
+          </p>
+          <p class="d-flex justify-content-between border-top pt-2 mb-2">
+            <strong>GST(5%)</strong>
+            <span id="MGst">₹0</span>
+          </p>
+          <p class="d-flex justify-content-between border-top pt-2 fs-5">
+            <strong>Total</strong>
+            <strong id="MTotal">₹0</strong>
+          </p>
+          <p class="alert alert-warning mt-4 mb-0">
+            3AC train ticket and flight ticket charges will be applied after the actual ticket booking.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Message Modal -->
+  <!-- Updated to use data-bs-dismiss for reliable closing, no custom onclick -->
+  <div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="messageModalLabel">Message</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="messageBody"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Traveler Info Modal -->
+  <!-- Updated to use data-bs-dismiss for Cancel button, no changes to Save button -->
+  <div class="modal fade" id="travelerInfoModal" tabindex="-1" aria-labelledby="travelerInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="travelerInfoModalLabel">Complete Your Profile</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted mb-3">Please provide the required details to proceed with the booking.</p>
+          <div>
+            <label class="traveler-info-modal-label">First Name <span class="text-danger">*</span></label>
+            <input id="modalFirstName" class="traveler-info-modal-field" type="text" placeholder="Your first name" />
+            <span class="error-message" id="modalFirstNameError">Please enter your first name.</span>
+          </div>
+          <div>
+            <label class="traveler-info-modal-label">Email <span class="text-danger">*</span></label>
+            <input id="modalEmail" class="traveler-info-modal-field" type="email" placeholder="Your email" <% if (!userData?.isloginFromNumber) { %> disabled <% } %> />
+            <span class="error-message" id="modalEmailError">Please enter a valid email.</span>
+          </div>
+          <div>
+            <label class="traveler-info-modal-label">Mobile Number <span class="text-danger">*</span></label>
+            <input id="modalMobileNo" class="traveler-info-modal-field" type="tel" placeholder="+91 Enter your mobile number" <% if (userData?.isloginFromNumber) { %> disabled <% } %> />
+            <span class="error-message" id="modalMobileNoError">Please enter a valid mobile number.</span>
+          </div>
+          <div>
+            <label class="traveler-info-modal-label">Birth Date <span class="text-danger">*</span></label>
+            <input id="modalBirthDate" class="traveler-info-modal-field" type="date" />
+            <span class="error-message" id="modalBirthDateError">Please enter your birth date.</span>
+          </div>
+          <div>
+            <label class="traveler-info-modal-label">Gender <span class="text-danger">*</span></label>
+            <select id="modalGender" class="traveler-info-modal-field form-select">
+              <option value="" disabled selected>Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+            <span class="error-message" id="modalGenderError">Please select your gender.</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="saveTravelerInfo()">Save and Proceed</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Payment Status Modal -->
+  <!-- Updated to use data-bs-dismiss for reliable closing -->
+  <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="paymentModalLabel">Payment Status</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="paymentModalBody"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="paymentModalCloseBtn" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../partials/footer'); %>
+  <%- include('../partials/scripttag', {isNiceSelect: true}); %>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script>
+    const tourDetails = <%- JSON.stringify(tourDetails) %>;
+    const userData = <%- JSON.stringify(userData || {}) %>;
+
+    // Store partial payment amount for the selected city
+    let partialPaymentAmount = 0;
+
+    // Filter past dates
+    function filterFutureDates(dates) {
+      const now = new Date();
+      now.setUTCHours(0, 0, 0, 0);
+      return dates.filter(date => {
+        const startDate = new Date(date.value);
+        return startDate >= now;
+      });
+    }
+
+    // Enable form fields and set prices based on selected transport type
+    function populateForm() {
+      const allFields = document.querySelectorAll('.enable-disable');
+      allFields.forEach(field => {
+        field.disabled = false;
+        field.classList.remove('cursor_not_allowed_booking', 'opacity-50');
+      });
+      const transportType = document.getElementById('transportType');
+      const transportList = tourDetails.transportList || [];
+      const priceBaseOnTransportType = transportList.find(t => t.transferType === transportType.value);
+      const Adultprice = document.getElementById('Adultprice');
+      const childprice = document.getElementById('childprice');
+      if (priceBaseOnTransportType) {
+        Adultprice.value = priceBaseOnTransportType.adultPrice || 0;
+        childprice.value = priceBaseOnTransportType.childPrice || 0;
+      } else {
+        Adultprice.value = 0;
+        childprice.value = 0;
+      }
+      // Check partial payment for selected city
+      checkPartialPayment();
+      populateDates();
+      updatePersonCounts();
+    }
+
+    // Check if partial payment is allowed for the selected city
+    function checkPartialPayment() {
+      const selectedCity = tourDetails.selectedInfo ? tourDetails.selectedInfo.city : document.getElementById('joiningFrom').value.trim();
+      const city = tourDetails.deptcities.find(c => c.City === selectedCity);
+      partialPaymentAmount = city && city.partialPayment ? parseFloat(city.partialPayment) : 0;
+      const partPayBtn = document.getElementById('partPayBtn');
+      if (partialPaymentAmount > 0) {
+        partPayBtn.disabled = false;
+        partPayBtn.classList.remove('cursor_not_allowed_booking', 'opacity-50');
+      } else {
+        partPayBtn.disabled = true;
+        partPayBtn.classList.add('cursor_not_allowed_booking', 'opacity-50');
+      }
+      // Default to full payment on transport change
+      togglePaymentType('full');
+    }
+
+    // Toggle between full and partial payment
+    function togglePaymentType(type) {
+      const fullPayBtn = document.getElementById('fullPayBtn');
+      const partPayBtn = document.getElementById('partPayBtn');
+      const paymentTypeInput = document.getElementById('paymentType');
+      const payingAmount = document.getElementById('payingAmount');
+      const payingAmountDisplay = document.getElementById('payingAmountDisplay');
+
+      if (type === 'full') {
+        fullPayBtn.classList.add('active');
+        partPayBtn.classList.remove('active');
+        paymentTypeInput.value = 'full';
+        recalculateCost(); // Sets payingAmount to full cost (including GST)
+      } else if (type === 'partial' && partialPaymentAmount > 0) {
+        partPayBtn.classList.add('active');
+        fullPayBtn.classList.remove('active');
+        paymentTypeInput.value = 'partial';
+        payingAmount.value = partialPaymentAmount.toFixed(2); // No GST on partial payment
+        payingAmountDisplay.innerHTML = partialPaymentAmount.toFixed(2);
+      }
+    }
+
+    // Add event listeners for payment type buttons
+    document.getElementById('fullPayBtn').addEventListener('click', () => togglePaymentType('full'));
+    document.getElementById('partPayBtn').addEventListener('click', () => togglePaymentType('partial'));
+
+    // Populate tour dates based on selected city
+    function populateDates(isFromLoad = false) {
+      const selectedCity = tourDetails.selectedInfo ? tourDetails.selectedInfo.city : document.getElementById('joiningFrom').value.trim();
+      const travelDateSelect = document.getElementById('travelDate');
+      const pickupFrom = document.getElementById('pickupFrom');
+      const ModelpickupFrom = document.getElementById('ModelpickupFrom');
+      const ModeltravelDate = document.getElementById('ModeltravelDate');
+      const travelDateDisplay = document.getElementById('travelDateDisplay');
+
+      // Clear existing options
+      while (travelDateSelect.options.length > 0) {
+        travelDateSelect.remove(0);
+      }
+
+      // Update UI elements
+      pickupFrom.innerHTML = ModelpickupFrom.innerHTML = selectedCity || 'Not selected';
+
+      // Filter dates
+      const dateOptions = filterFutureDates(tourDetails.selectedCityDates || []);
+
+      if (dateOptions.length > 0) {
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'Select Date';
+        defaultOption.disabled = true;
+        travelDateSelect.appendChild(defaultOption);
+
+        dateOptions.forEach(({
+          value,
+          text
+        }) => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = text;
+          travelDateSelect.appendChild(option);
+        });
+
+        // Pre-select date if provided
+        if (isFromLoad && tourDetails.selectedInfo && tourDetails.selectedInfo.date) {
+          const selectedDateISO = tourDetails.selectedInfo.date;
+          if (travelDateSelect.querySelector(`option[value="${selectedDateISO}"]`)) {
+            travelDateSelect.value = selectedDateISO;
+            const selectedOption = dateOptions.find(opt => opt.value === selectedDateISO);
+            travelDateDisplay.innerHTML = ModeltravelDate.innerHTML = selectedOption ? selectedOption.text : 'Select Date';
+          } else {
+            travelDateSelect.value = '';
+            travelDateDisplay.innerHTML = ModeltravelDate.innerHTML = 'Select Date';
+          }
+        }
+
+        // Update UI if a date is selected
+        if (travelDateSelect.value && travelDateSelect.value !== '') {
+          const selectedOption = dateOptions.find(opt => opt.value === travelDateSelect.value);
+          travelDateDisplay.innerHTML = ModeltravelDate.innerHTML = selectedOption ? selectedOption.text : 'Select Date';
+        } else {
+          travelDateDisplay.innerHTML = ModeltravelDate.innerHTML = 'Select Date';
+        }
+      } else {
+        const option = document.createElement('option');
+        option.textContent = 'No Tour dates available';
+        travelDateSelect.appendChild(option);
+        travelDateDisplay.innerHTML = ModeltravelDate.innerHTML = 'No Tour dates available';
+      }
+
+      // Reinitialize nice-select
+      if ($.fn.niceSelect) {
+        $('#travelDate').niceSelect('destroy');
+        $('#joiningFrom').niceSelect('destroy');
+        $('#transportType').niceSelect('destroy');
+        $('#Gender').niceSelect('destroy');
+        $('#travelDate').niceSelect();
+        $('#joiningFrom').niceSelect();
+        $('#transportType').niceSelect();
+        $('#Gender').niceSelect();
+      }
+    }
+
+    // Update UI when tour date changes
+    function onchangetoureDate() {
+      const travelDateSelect = document.getElementById('travelDate');
+      const travelDateDisplay = document.getElementById('travelDateDisplay');
+      const ModeltravelDate = document.getElementById('ModeltravelDate');
+      const dateOptions = tourDetails.selectedCityDates || [];
+      const selectedOption = dateOptions.find(opt => opt.value === travelDateSelect.value);
+      travelDateDisplay.innerHTML = ModeltravelDate.innerHTML = selectedOption ? selectedOption.text : 'Select Date';
+    }
+
+    // Calculate age from date of birth
+    function calculateAge(dobString) {
+      const dob = new Date(dobString);
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const monthDiff = today.getMonth() - dob.getMonth();
+      const dayDiff = today.getDate() - dob.getDate();
+      if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+        age--;
+      }
+      return age;
+    }
+
+    // Update adult and child counts based on birth dates
+    function updatePersonCounts() {
+      const dobInputs = document.querySelectorAll('.dateofbirthInput');
+      let adultCount = 0;
+      let childCount = 0;
+      dobInputs.forEach(input => {
+        if (input.value) {
+          const age = calculateAge(input.value);
+          if (age > 10) {
+            adultCount++;
+          } else if (age >= 5 && age <= 10) {
+            childCount++;
+          }
+        }
+      });
+      const adultsInput = document.getElementById('adults');
+      const childrenInput = document.getElementById('children');
+      adultsInput.value = adultCount;
+      childrenInput.value = childCount;
+      recalculateCost();
+    }
+
+    // Recalculate total cost (GST applied only to total, not partial payment)
+    function recalculateCost() {
+      const AdultpriceValue = parseInt(document.getElementById('Adultprice').value.trim()) || 0;
+      const childpriceValue = parseInt(document.getElementById('childprice').value.trim()) || 0;
+      const NoofAdutts = parseInt(document.getElementById('adults').value.trim()) || 0;
+      const NoofChild = parseInt(document.getElementById('children').value.trim()) || 0;
+      const totalCost = document.getElementById('totalCost');
+      const payingAmountDisplay = document.getElementById('payingAmountDisplay');
+      const payingAmount = document.getElementById('payingAmount');
+      const paymentType = document.getElementById('paymentType').value;
+
+      const subtotal = NoofAdutts * AdultpriceValue + NoofChild * childpriceValue;
+      const gst = subtotal * 0.05;
+      const total = subtotal + gst;
+      totalCost.innerHTML = total.toFixed(2);
+
+      // Set paying amount based on payment type
+      if (paymentType === 'full') {
+        payingAmount.value = total.toFixed(2);
+        payingAmountDisplay.innerHTML = total.toFixed(2);
+      } else if (paymentType === 'partial') {
+        const partialAmount = partialPaymentAmount; // Flat partial payment (no GST)
+        payingAmount.value = partialAmount.toFixed(2);
+        payingAmountDisplay.innerHTML = partialAmount.toFixed(2);
+      }
+    }
+
+    // Increment or decrement adult/child counts with validation
+    function increDecreValue(type, operation) {
+      const el = document.getElementById(type);
+      const personCount = document.getElementById("personDetailsContainer").children.length;
+      const NoofAdutts = parseInt(document.getElementById('adults').value.trim()) || 0;
+      const NoofChild = parseInt(document.getElementById('children').value.trim()) || 0;
+      if (operation === 'increment') {
+        if (personCount < (NoofAdutts + NoofChild + 1)) {
+          el.value = parseInt(el.value) + 1;
+          const addPerson = document.getElementById('AddPerson');
+          addPerson.style.display = 'block';
+          addPerson.disabled = false;
+        } else {
+          toastr.error("Add person details first before increasing count.");
+        }
+      } else {
+        if (personCount <= (NoofAdutts + NoofChild) && ((type === 'adults' && parseInt(el.value) > 1) || (type === 'children' && parseInt(el.value) > 0))) {
+          el.value = parseInt(el.value) - 1;
+          const addPerson = document.getElementById('AddPerson');
+          addPerson.disabled = false;
+          addPerson.style.display = 'block';
+        } else if (personCount > (NoofAdutts + NoofChild)) {
+          toastr.error("Remove a person first to reduce the count.");
+        }
+      }
+      recalculateCost();
+    }
+
+    // Add a new person’s details form
+    function addPerson() {
+      const personContainer = document.getElementById("personDetailsContainer");
+      const personCount = personContainer.children.length + 1;
+      const NoofAdutts = parseInt(document.getElementById('adults').value.trim()) || 0;
+      const NoofChild = parseInt(document.getElementById('children').value.trim()) || 0;
+      if (personCount <= (NoofAdutts + NoofChild)) {
+        let personDiv = document.createElement("div");
+        personDiv.classList.add("person-details", "border-top", "row", "gy-3", "mt-4");
+        personDiv.id = `person${personCount}`;
+        personDiv.innerHTML = `
+          <div class="col-12 d-flex align-items-center justify-content-between pt-2">
+            <span class="h6">Person ${personCount}</span>
+            <button id="removePerson${personCount}" type="button" class="btn btn-sm btn-danger" onclick="removePerson(${personCount})">Remove</button>
+          </div>
+          <div class="col-sm-6">
+            <label for="firstName_${personCount}">First name <span class="text-danger">*</span></label>
+            <input id="firstName_${personCount}" name="personDetails[${personCount - 1}][firstName]" class="form-control" type="text" required placeholder="Your name here" />
+          </div>
+          <div class="col-sm-6">
+            <label class="Surname_${personCount}">Last name <span class="text-danger">*</span></label>
+            <input id="Surname_${personCount}" name="personDetails[${personCount - 1}][Surname]" class="form-control" type="text" required placeholder="Please enter last name" />
+          </div>
+          <div class="col-sm-6">
+            <label class="dateofbirth_${personCount}">Birth date <span class="text-danger">*</span></label>
+            <input id="dateofbirth_${personCount}" name="personDetails[${personCount - 1}][dateofbirth]" class="form-control enable-disable dateofbirthInput" required type="date" onchange="updatePersonCounts()" />
+          </div>
+          <div class="col-sm-6">
+            <label class="Gender_${personCount}">Gender <span class="text-danger">*</span></label>
+            <select id="Gender_${personCount}" name="personDetails[${personCount - 1}][Gender]" class="form-select" required>
+              <option value="" disabled selected>Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label class="mobileno_${personCount}">Mobile number <span class="text-danger">*</span></label>
+            <input id="mobileno_${personCount}" name="personDetails[${personCount - 1}][mobileno]" class="form-control" type="tel" required placeholder="+91 Enter your mobile number" />
+          </div>
+          <div class="col-sm-6">
+            <label class="alternateNumber_${personCount}">Alternative number</label>
+            <input id="alternateNumber_${personCount}" name="personDetails[${personCount - 1}][alternateNumber]" class="form-control" type="tel" placeholder="+91 Enter alt mobile number" />
+          </div>
+        `;
+        personContainer.appendChild(personDiv);
+        const addPerson = document.getElementById('AddPerson');
+        if (personCount === (NoofAdutts + NoofChild)) {
+          addPerson.style.display = 'none';
+        } else {
+          addPerson.style.display = 'block';
+        }
+        // Reinitialize nice-select for new select elements
+        if ($.fn.niceSelect) {
+          $(`#person${personCount} select`).niceSelect();
+        }
+      } else {
+        toastr.error("Increase the number of adults or children before adding more persons.");
+      }
+      updatePersonCounts();
+    }
+
+    // Remove a person’s details
+    function removePerson(removePersonId) {
+      const div = document.getElementById(`person${removePersonId}`);
+      if (div) {
+        div.remove();
+        const addPerson = document.getElementById('AddPerson');
+        addPerson.style.display = 'block';
+        updatePersonCounts();
+      }
+    }
+
+    // Open traveler info modal for incomplete profiles
+    function openTravelerInfoModal() {
+      document.getElementById('modalFirstName').value = userData.firstName || '';
+      document.getElementById('modalEmail').value = userData.email || '';
+      document.getElementById('modalMobileNo').value = userData.phone || '';
+      document.getElementById('modalBirthDate').value = userData.birthDate ? new Date(userData.birthDate).toISOString().split('T')[0] : '';
+      document.getElementById('modalGender').value = userData.gender || '';
+      // $('#travelerInfoModal').modal('show');
+    }
+    // Save traveler info and update profile
+    async function saveTravelerInfo() {
+      const mobileNo = document.getElementById('modalMobileNo').value.trim();
+      const firstName = document.getElementById('modalFirstName').value.trim();
+      const email = document.getElementById('modalEmail').value.trim();
+      const birthDate = document.getElementById('modalBirthDate').value;
+      const gender = document.getElementById('modalGender').value;
+      let isValid = true;
+
+      if (!firstName) {
+        document.getElementById('modalFirstNameError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('modalFirstNameError').style.display = 'none';
+      }
+
+      if (!email || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        document.getElementById('modalEmailError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('modalEmailError').style.display = 'none';
+      }
+
+      if (!mobileNo || !mobileNo.match(/^\+?\d{10,15}$/)) {
+        document.getElementById('modalMobileNoError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('modalMobileNoError').style.display = 'none';
+      }
+
+      if (!birthDate) {
+        document.getElementById('modalBirthDateError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('modalBirthDateError').style.display = 'none';
+      }
+
+      if (!gender) {
+        document.getElementById('modalGenderError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('modalGenderError').style.display = 'none';
+      }
+
+      if (isValid) {
+        try {
+          const profileData = {
+            mobileNumber: mobileNo,
+            firstName,
+            email,
+            birthDate,
+            gender
+          };
+          const response = await fetch('/profile/update', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'CSRF-Token': document.querySelector('input[name="_csrf"]').value
+            },
+            body: JSON.stringify(profileData)
+          });
+          const result = await response.json();
+          if (result.message.includes('successfully')) {
+            toastr.success('Profile updated successfully.');
+            // Update userData
+            userData.firstName = firstName;
+            userData.email = email;
+            userData.phone = mobileNo;
+            userData.birthDate = birthDate;
+            userData.gender = gender;
+            // Update hidden form inputs
+            document.querySelector('input[name="email"]').value = email;
+            document.querySelector('input[name="firstName"]').value = firstName;
+            document.querySelector('input[name="phone"]').value = mobileNo;
+            // Close modal using jQuery
+            $('#travelerInfoModal').modal('hide');
+            setTimeout(() => {
+              document.getElementById('bookingForm').dispatchEvent(new Event('submit'));
+            }, 100);
+          } else {
+            toastr.error('Failed to update profile: ' + result.message);
+          }
+        } catch (err) {
+          toastr.error('Error updating profile: ' + err.message);
+          console.error('Profile update error:', err);
+        }
+      }
+    }
+
+    // Generic function to close any modal programmatically
+    // Simplified to use jQuery
+    function closeModal(modalId) {
+      $(`#${modalId}`).modal('hide');
+    }
+
+    // Handle form submission and payment initiation
+    document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const requiredFields = ['firstName', 'birthDate', 'gender'];
+      const isEmailOrPhoneComplete = (userData.email && userData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) || (userData.phone && userData.phone.match(/^\+?\d{10,15}$/));
+      const isProfileComplete = requiredFields.every(field => userData[field] && userData[field].trim() !== '') && isEmailOrPhoneComplete;
+      if (!isProfileComplete) {
+        openTravelerInfoModal();
+        $('#travelerInfoModal').modal('show');
+        return;
+      }
+
+      const NoofAdutts = parseInt(document.getElementById('adults').value.trim()) || 0;
+      const NoofChild = parseInt(document.getElementById('children').value.trim()) || 0;
+      const dobList = document.querySelectorAll('.dateofbirthInput');
+      let adultCount = 0;
+      let childCount = 0;
+      let isValid = true;
+      let message = '';
+
+      dobList.forEach((ele, index) => {
+        if (ele.value) {
+          const age = calculateAge(ele.value);
+          if (age > 10) {
+            adultCount++;
+          } else if (age >= 5 && age <= 10) {
+            childCount++;
+          } else {
+            isValid = false;
+            message += `<li><p class='text-danger'>• Invalid age for person ${index + 1} (must be 5 years or older).</p></li>`;
+          }
+        } else {
+          isValid = false;
+          message += `<li><p class='text-danger'>• Birth date missing for person ${index + 1}.</p></li>`;
+        }
+      });
+
+      if (adultCount === 0) {
+        isValid = false;
+        message += "<li><p class='text-danger'>• At least one adult (age > 10) is required.</p></li>";
+      }
+
+      if (adultCount !== NoofAdutts || childCount !== NoofChild) {
+        isValid = false;
+        message += "<li><p class='text-danger'>• The number of adults and children based on ages doesn't match the selected counts. Please update person details.</p></li>";
+      }
+
+      if (!document.getElementById('travelDate').value) {
+        isValid = false;
+        message += "<li><p class='text-danger'>• Please select a tour date.</p></li>";
+      }
+
+      if (!document.getElementById('transportType').value) {
+        isValid = false;
+        message += "<li><p class='text-danger'>• Please select a transport type.</p></li>";
+      }
+
+      if (!isValid) {
+        const messageBody = document.getElementById('messageBody');
+        messageBody.innerHTML = '<ul>' + message + '</ul>';
+        $('#messageModal').modal('show');
+        return;
+      }
+
+      const form = document.getElementById('bookingForm');
+      const formData = new FormData(form);
+      const data = {
+        _csrf: formData.get('_csrf'),
+        tourId: formData.get('tourId'),
+        userId: formData.get('userId'),
+        transportType: formData.get('transportType'),
+        joiningFrom: document.getElementById('joiningFrom').value.trim(),
+        travelDate: formData.get('travelDate'),
+        adults: formData.get('adults'),
+        children: formData.get('children'),
+        Adultprice: formData.get('Adultprice'),
+        childprice: formData.get('childprice'),
+        payingAmount: formData.get('payingAmount'),
+        paymentType: formData.get('paymentType'),
+        name: `${formData.get('firstName') || 'Guest'}`.trim(),
+        email: formData.get('email') || userData.email,
+        contact: formData.get('phone') || (userData.isloginFromNumber ? userData.phone : userData.email) || '',
+        personDetails: []
+      };
+
+      for (let i = 0; i < (NoofAdutts + NoofChild); i++) {
+        if (formData.get(`personDetails[${i}][mobileno]`)) {
+          data.personDetails.push({
+            firstName: formData.get(`personDetails[${i}][firstName]`) || '',
+            surname: formData.get(`personDetails[${i}][Surname]`) || '',
+            gender: formData.get(`personDetails[${i}][Gender]`),
+            birthdate: formData.get(`personDetails[${i}][dateofbirth]`),
+            phone: formData.get(`personDetails[${i}][mobileno]`),
+            altphone: formData.get(`personDetails[${i}][alternateNumber]`) || ''
+          });
+        }
+      }
+
+      try {
+        const response = await fetch('/payment/order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'CSRF-Token': formData.get('_csrf')
+          },
+          body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (result.success) {
+          const options = {
+            key: result.razorpayKeyId,
+            amount: result.order.amount,
+            currency: result.order.currency,
+            name: 'Travel Booking',
+            description: `Payment for booking ${result.bookingId}`,
+            order_id: result.order.id,
+            handler: async function(response) {
+              try {
+                const verifyResponse = await fetch('/payment/verify', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'CSRF-Token': formData.get('_csrf')
+                  },
+                  body: JSON.stringify({
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature,
+                    paymentLogId: result.paymentLogId,
+                    bookingId: result.bookingId
+                  })
+                });
+                const verifyResult = await verifyResponse.json();
+                const paymentModalBody = document.getElementById('paymentModalBody');
+                const paymentModalCloseBtn = document.getElementById('paymentModalCloseBtn');
+                if (verifyResult.success) {
+                  paymentModalBody.innerHTML = `
+                <p class="text-success">Payment successful! Your booking is confirmed.</p>
+                <p>Booking ID: ${result.bookingId}</p>
+                <p>Amount Paid: ₹${result.order.amount / 100}</p>
+                ${result.isPartial ? `<p>Remaining Amount: ₹${verifyResult.booking.duePayment}</p>` : ''}
+                <p>Note: You can view your booking details under the <strong>Upcoming trips</strong> section on your profile.</p>
+              `;
+                } else {
+                  paymentModalBody.innerHTML = `
+                <p class="text-danger">Payment verification failed. Please try again.</p>
+                <p>Error: ${verifyResult.message}</p>
+              `;
+                }
+                paymentModalCloseBtn.textContent = 'Okay';
+                paymentModalCloseBtn.onclick = function() {
+                  $('#paymentModal').modal('hide');
+                  window.location.href = '/profile';
+                };
+                $('#paymentModal').modal('show');
+              } catch (err) {
+                document.getElementById('paymentModalBody').innerHTML = `
+              <p class="text-danger">Error verifying payment: ${err.message}</p>
+            `;
+                $('#paymentModal').modal('show');
+              }
+            },
+            prefill: {
+              name: result.name,
+              email: result.email,
+              contact: result.contact
+            },
+            theme: {
+              color: '#002d66'
+            }
+          };
+          const rzp = new Razorpay(options);
+          rzp.on('payment.failed', function(response) {
+            document.getElementById('paymentModalBody').innerHTML = `
+          <p class="text-danger">Payment failed: ${response.error.description}</p>
+        `;
+            $('#paymentModal').modal('show');
+          });
+          rzp.open();
+        } else {
+          toastr.error(result.message || 'Failed to initiate payment.');
+        }
+      } catch (err) {
+        toastr.error('Error initiating payment: ' + err.message);
+        console.error('Payment error:', err);
+      }
+    });
+
+    // Update cost breakdown modal to reflect correct GST and due amount
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("openCostModalBtn").addEventListener("click", function() {
+        const costTable = document.getElementById("costTableBody");
+        costTable.innerHTML = "";
+        const AdultpriceValue = parseInt(document.getElementById('Adultprice').value.trim()) || 0;
+        const childpriceValue = parseInt(document.getElementById('childprice').value.trim()) || 0;
+        const NoofAdutts = parseInt(document.getElementById('adults').value.trim()) || 0;
+        const NoofChild = parseInt(document.getElementById('children').value.trim()) || 0;
+        const paymentType = document.getElementById('paymentType').value;
+
+        const costDetails = [{
+            label: "Adults",
+            quantity: NoofAdutts,
+            price: AdultpriceValue,
+            total: NoofAdutts * AdultpriceValue
+          },
+          {
+            label: "Child",
+            quantity: NoofChild,
+            price: childpriceValue,
+            total: NoofChild * childpriceValue
+          }
+        ];
+
+        const subtotalAmountValue = (NoofAdutts * AdultpriceValue) + (NoofChild * childpriceValue);
+        const gstAmountValue = subtotalAmountValue * 0.05;
+        const totalAmount = subtotalAmountValue + gstAmountValue;
+        let payingAmount;
+
+        if (paymentType === 'partial') {
+          payingAmount = partialPaymentAmount; // No GST on partial payment
+        } else {
+          payingAmount = totalAmount;
+        }
+
+        costDetails.forEach(item => {
+          if (item.quantity > 0) {
+            const row = `<tr>
+          <td>${item.label}</td>
+          <td>${item.quantity} x ₹${item.price}</td>
+          <td>₹${item.total}</td>
+        </tr>`;
+            costTable.innerHTML += row;
+          }
+        });
+
+        costTable.innerHTML += `
+      <tr>
+        <td>Payment Type</td>
+        <td>${paymentType === 'full' ? 'Full Payment' : 'Partial Payment'}</td>
+        <td></td>
+      </tr>
+      ${paymentType === 'partial' ? `
+        <tr>
+          <td>Partial Payment</td>
+          <td></td>
+          <td>₹${partialPaymentAmount.toFixed(2)}</td>
+        </tr>
+        <tr>
+          <td>Remaining Amount (including 5% GST on total)</td>
+          <td></td>
+          <td>₹${(totalAmount - partialPaymentAmount).toFixed(2)}</td>
+        </tr>
+      ` : ''}
+    `;
+        document.getElementById("MSubtotal").textContent = `₹${subtotalAmountValue.toFixed(2)}`;
+        document.getElementById("MGst").textContent = `₹${gstAmountValue.toFixed(2)}`;
+        document.getElementById("MTotal").textContent = `₹${totalAmount.toFixed(2)}`;
+        costTable.innerHTML += `
+      <tr>
+        <td><strong>Amount to Pay Now</strong></td>
+        <td></td>
+        <td><strong>₹${payingAmount.toFixed(2)}</strong></td>
+      </tr>
+    `;
+      });
+    });
+
+    // Initialize form on page load
+    window.onload = () => {
+      const allFields = document.querySelectorAll('.enable-disable');
+      const transportType = document.getElementById('transportType').value.trim();
+      if (!transportType) {
+        allFields.forEach(field => field.disabled = true);
+        allFields.forEach(field => field.classList.add('cursor_not_allowed_booking', 'opacity-50'));
+      }
+      populateDates(true);
+      checkPartialPayment();
+      const joiningFrom = document.getElementById('joiningFrom');
+      if (joiningFrom.value) {
+        joiningFrom.dispatchEvent(new Event('change'));
+        if ($.fn.niceSelect) {
+          $('#joiningFrom').niceSelect('update');
+        }
+      }
+      updatePersonCounts();
+    };
+
+    // Lock joiningFrom to selected city
+    document.getElementById('joiningFrom').addEventListener('change', (e) => {
+      e.preventDefault();
+      e.target.value = tourDetails.selectedInfo ? tourDetails.selectedInfo.city : e.target.value;
+      populateDates();
+      checkPartialPayment();
+      if ($.fn.niceSelect) {
+        $('#joiningFrom').niceSelect('update');
+      }
+    });
+  </script>
+</body>
+
+</html>
