@@ -193,7 +193,7 @@ exports.updateTour = async (req, res) => {
 
 /**
  * DELETE /api/v1/admin/tours/:id
- * Soft delete a tour
+ * Soft delete a tour 
  */
 exports.deleteTour = async (req, res) => {
   try {
